@@ -1854,7 +1854,7 @@ export default function NotificationsPage() {
            موافقة
            <CheckCircle/>
               </Button>
-              <Button variant='destructive' onClick={()=>handleApproval('reject',selectedNotification?.id!)} className="w-full">
+              <Button variant='destructive' onClick={()=>handleApproval('rejected',selectedNotification?.id!)} className="w-full">
                 رفض
                 <X/>
               </Button>
