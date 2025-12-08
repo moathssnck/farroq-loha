@@ -1640,15 +1640,15 @@ export default function NotificationsPage() {
           </Card>
 
           {/* Main Content Table */}
-          <Card className="bg-card/50 backdrop-blur-sm border shadow-md">
-            <CardHeader className="pb-4 border-b">
+          <Card className="bg-slate-900/70 backdrop-blur-sm border border-slate-800/50 shadow-xl shadow-black/20">
+            <CardHeader className="pb-4 border-b border-slate-800/50">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                    <Activity className="h-6 w-6 text-primary" />
+                  <CardTitle className="text-2xl font-bold flex items-center gap-3 text-white">
+                    <Activity className="h-6 w-6 text-emerald-400" />
                     إدارة الإشعارات
                   </CardTitle>
-                  <CardDescription className="mt-1">
+                  <CardDescription className="mt-1 text-slate-400">
                     عرض وإدارة جميع الإشعارات والبيانات المستلمة ({filteredNotifications.length} إشعار)
                   </CardDescription>
                 </div>
@@ -1663,11 +1663,11 @@ export default function NotificationsPage() {
             <CardContent className="p-0">
               {paginatedNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4">
-                  <div className="rounded-full bg-muted p-6 mb-4">
-                    <AlertCircle className="h-12 w-12 text-muted-foreground" />
+                  <div className="rounded-full bg-slate-800/50 p-6 mb-4">
+                    <AlertCircle className="h-12 w-12 text-slate-500" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">لا توجد إشعارات</h3>
-                  <p className="text-muted-foreground text-center">
+                  <h3 className="text-xl font-semibold mb-2 text-white">لا توجد إشعارات</h3>
+                  <p className="text-slate-400 text-center">
                     {searchTerm || filterType !== "all"
                       ? "لم يتم العثور على نتائج مطابقة للفلاتر المحددة"
                       : "لا توجد إشعارات حالياً، ستظهر هنا عند استلام إشعارات جديدة"}
@@ -1677,7 +1677,7 @@ export default function NotificationsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full table-auto border-collapse">
                     <thead>
-                      <tr className="bg-muted/50 border-b border-border">
+                      <tr className="bg-slate-800/50 border-b border-slate-700/50">
                         {[
                           { label: "الدولة", sortKey: "country" },
                           { label: "المعلومات", sortKey: null },
@@ -1690,14 +1690,14 @@ export default function NotificationsPage() {
                         ].map((heading) => (
                           <th
                             key={heading.label}
-                            className={`px-6 py-4 text-right font-semibold text-muted-foreground ${
-                              heading.sortKey ? "cursor-pointer hover:bg-muted/80 transition-colors" : ""
+                            className={`px-6 py-4 text-right font-semibold text-slate-300 ${
+                              heading.sortKey ? "cursor-pointer hover:bg-slate-700/50 transition-colors" : ""
                             }`}
                             onClick={heading.sortKey ? () => toggleSort(heading.sortKey as any) : undefined}
                           >
                             <div className="flex items-center gap-2 justify-end">
                               {heading.label}
-                              {heading.sortKey && sortBy === heading.sortKey && <ArrowUpDown className="h-3 w-3" />}
+                              {heading.sortKey && sortBy === heading.sortKey && <ArrowUpDown className="h-3 w-3 text-emerald-400" />}
                             </div>
                           </th>
                         ))}
@@ -1707,15 +1707,15 @@ export default function NotificationsPage() {
                       {paginatedNotifications.map((notification, index) => (
                         <tr
                           key={notification.id}
-                          className="border-b border-border hover:bg-muted/30 transition-colors animate-in fade-in slide-in-from-bottom-2"
+                          className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors animate-in fade-in slide-in-from-bottom-2"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                                <MapPin className="h-4 w-4 text-primary" />
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center">
+                                <MapPin className="h-4 w-4 text-emerald-400" />
                               </div>
-                              <span className="font-medium">{notification.country || "غير معروف"}</span>
+                              <span className="font-medium text-white">{notification.country || "غير معروف"}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -1742,8 +1742,8 @@ export default function NotificationsPage() {
                             <StatusBadge status={notification.status} />
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="h-4 w-4 flex-shrink-0" />
+                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                              <Clock className="h-4 w-4 flex-shrink-0 text-slate-500" />
                               <span className="whitespace-nowrap">
                                 {notification.createdDate &&
                                   formatDistanceToNow(new Date(notification.createdDate), {
@@ -1760,19 +1760,19 @@ export default function NotificationsPage() {
                             {notification.otp ? (
                               <Badge
                                 variant="outline"
-                                className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 font-mono"
+                                className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-mono"
                               >
                                 {notification.otp}
                               </Badge>
                             ) : (
-                              <span className="text-muted-foreground text-sm">-</span>
+                              <span className="text-slate-500 text-sm">-</span>
                             )}
                           </td>
                           <td className="px-6 py-4 text-center">
                             {notification?.currentPage ? (
-                              <Badge variant="outline">{notification.currentPage}</Badge>
+                              <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700">{notification.currentPage}</Badge>
                             ) : (
-                              <span className="text-muted-foreground text-sm">-</span>
+                              <span className="text-slate-500 text-sm">-</span>
                             )}
                           </td>
                           <td className="px-6 py-4">
@@ -1791,7 +1791,7 @@ export default function NotificationsPage() {
               )}
             </CardContent>
             {paginatedNotifications.length > 0 && (
-              <CardFooter className="border-t p-4">
+              <CardFooter className="border-t border-slate-800/50 p-4">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
