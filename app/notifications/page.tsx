@@ -402,12 +402,12 @@ function SearchBar({ onSearch, value }: { onSearch: (term: string) => void; valu
 
   return (
     <div className="relative group">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
       <Input
         ref={searchInputRef}
         type="search"
         placeholder="البحث في الإشعارات... (اضغط / للتركيز)"
-        className="pl-10 pr-10 bg-background/50 backdrop-blur-sm border-muted-foreground/20 focus:border-primary/50 transition-colors"
+        className="pl-10 pr-10 bg-slate-800/50 backdrop-blur-sm border-slate-700/50 text-white placeholder:text-slate-500 focus:border-emerald-500/50 transition-colors"
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -416,7 +416,7 @@ function SearchBar({ onSearch, value }: { onSearch: (term: string) => void; valu
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 text-slate-400 hover:text-white"
           onClick={handleClear}
         >
           <X className="h-3 w-3" />
@@ -1490,7 +1490,7 @@ export default function NotificationsPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                    <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isLoading} className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
                       <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                     </Button>
                   </TooltipTrigger>
@@ -1503,7 +1503,7 @@ export default function NotificationsPage() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={handleToggleStatistics}>
+                    <Button variant="outline" size="icon" onClick={handleToggleStatistics} className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
                       <Activity className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -1515,28 +1515,28 @@ export default function NotificationsPage() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-emerald-400">
                     <User className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56" >
+                <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-700" >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">مدير النظام</p>
-                      <p className="text-xs text-muted-foreground">admin@example.com</p>
+                      <p className="text-sm font-medium text-white">مدير النظام</p>
+                      <p className="text-xs text-slate-400">admin@example.com</p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <DropdownMenuItem onClick={() => setSettingsOpen(true)} className="text-slate-300 hover:text-white focus:bg-slate-800">
                     <Settings className="ml-2 h-4 w-4" />
                     <span>الإعدادات</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)} className="text-slate-300 hover:text-white focus:bg-slate-800">
                     <Download className="ml-2 h-4 w-4" />
                     <span>تصدير البيانات</span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:text-red-300 focus:bg-slate-800">
                     <LogOut className="ml-2 h-4 w-4" />
                     <span>تسجيل الخروج</span>
                   </DropdownMenuItem>
@@ -1599,20 +1599,20 @@ export default function NotificationsPage() {
                     onValueChange={(value: any) => setFilterType(value)}
                     className="w-full sm:w-auto"
                   >
-                    <TabsList className="grid grid-cols-4 w-full sm:w-auto">
-                      <TabsTrigger value="all" className="flex items-center gap-1">
+                    <TabsList className="grid grid-cols-4 w-full sm:w-auto bg-slate-800/50 border border-slate-700/50">
+                      <TabsTrigger value="all" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
                         <Filter className="h-3 w-3" />
                         الكل
                       </TabsTrigger>
-                      <TabsTrigger value="pending" className="flex items-center gap-1">
+                      <TabsTrigger value="pending" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
                         <Clock className="h-3 w-3" />
                         معلق
                       </TabsTrigger>
-                      <TabsTrigger value="card" className="flex items-center gap-1">
+                      <TabsTrigger value="card" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-violet-600 data-[state=active]:text-white">
                         <CreditCard className="h-3 w-3" />
                         بطاقات
                       </TabsTrigger>
-                      <TabsTrigger value="online" className="flex items-center gap-1">
+                      <TabsTrigger value="online" className="flex items-center gap-1 text-slate-400 data-[state=active]:bg-cyan-600 data-[state=active]:text-white">
                         <UserCheck className="h-3 w-3" />
                         متصل
                       </TabsTrigger>
@@ -1620,14 +1620,14 @@ export default function NotificationsPage() {
                   </Tabs>
 
                   <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <ArrowUpDown className="h-4 w-4 ml-2" />
+                    <SelectTrigger className="w-full sm:w-[180px] bg-slate-800/50 border-slate-700/50 text-slate-300">
+                      <ArrowUpDown className="h-4 w-4 ml-2 text-emerald-400" />
                       <SelectValue placeholder="ترتيب حسب" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date">التاريخ</SelectItem>
-                      <SelectItem value="status">الحالة</SelectItem>
-                      <SelectItem value="country">الدولة</SelectItem>
+                    <SelectContent className="bg-slate-900 border-slate-700">
+                      <SelectItem value="date" className="text-slate-300 focus:bg-slate-800 focus:text-white">التاريخ</SelectItem>
+                      <SelectItem value="status" className="text-slate-300 focus:bg-slate-800 focus:text-white">الحالة</SelectItem>
+                      <SelectItem value="country" className="text-slate-300 focus:bg-slate-800 focus:text-white">الدولة</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
