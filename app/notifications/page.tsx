@@ -181,37 +181,38 @@ function StatisticsCard({
   trend?: number[]
 }) {
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-      <CardHeader className="pb-2">
+    <Card className="relative overflow-hidden bg-slate-900/70 border border-slate-800/50 shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-black/30 transition-all duration-300 group backdrop-blur-sm">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <CardHeader className="pb-2 relative">
         <div className="flex items-center justify-between">
-          <div className={`p-3 rounded-xl ${color} shadow-md group-hover:scale-110 transition-transform`}>
+          <div className={`p-3 rounded-xl ${color} shadow-lg group-hover:scale-110 transition-transform`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">{value}</p>
+            <p className="text-sm font-medium text-slate-400">{title}</p>
+            <p className="text-3xl font-bold text-white">{value}</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <TrendingUp
               className={`h-4 w-4 ${
                 changeType === "increase"
-                  ? "text-green-500"
+                  ? "text-emerald-400"
                   : changeType === "decrease"
-                    ? "text-red-500"
-                    : "text-gray-500"
+                    ? "text-red-400"
+                    : "text-slate-500"
               }`}
             />
             <span
               className={`text-sm font-medium ${
                 changeType === "increase"
-                  ? "text-green-500"
+                  ? "text-emerald-400"
                   : changeType === "decrease"
-                    ? "text-red-500"
-                    : "text-gray-500"
+                    ? "text-red-400"
+                    : "text-slate-500"
               }`}
             >
               {change}
@@ -219,11 +220,11 @@ function StatisticsCard({
           </div>
           {trend && (
             <div className="flex items-end gap-1 h-8">
-              {trend.map((value, index) => (
+              {trend.map((val, index) => (
                 <div
                   key={index}
-                  className={`w-1.5 rounded-sm ${color.replace("bg-gradient-to-br", "bg-primary")} opacity-60 hover:opacity-100 transition-opacity`}
-                  style={{ height: `${(value / Math.max(...trend)) * 100}%` }}
+                  className="w-1.5 rounded-sm bg-emerald-500/60 hover:bg-emerald-400 transition-colors"
+                  style={{ height: `${(val / Math.max(...trend)) * 100}%` }}
                 />
               ))}
             </div>
@@ -1341,13 +1342,18 @@ export default function NotificationsPage() {
 
   if (isLoading && notifications.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/10 blur-3xl animate-pulse" />
+          <div className="absolute -bottom-48 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-tl from-cyan-500/15 to-emerald-500/5 blur-3xl animate-pulse" />
+        </div>
+        <div className="relative flex flex-col items-center gap-6">
           <div className="relative">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
-            <div className="absolute inset-0 h-12 w-12 animate-pulse rounded-full bg-primary/10"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 blur-xl opacity-50 animate-pulse" />
+            <div className="relative h-16 w-16 animate-spin rounded-full border-4 border-slate-700 border-t-emerald-500"></div>
           </div>
-          <div className="text-lg font-medium">جاري التحميل...</div>
+          <div className="text-xl font-semibold text-white">جاري التحميل...</div>
+          <div className="text-sm text-slate-400">يرجى الانتظار</div>
         </div>
       </div>
     )
@@ -1361,7 +1367,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetContent side="right" className="w-[280px] sm:w-[350px]" dir="rtl">
@@ -1442,8 +1448,15 @@ export default function NotificationsPage() {
           </SheetContent>
         </Sheet>
 
+        {/* Animated Background */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-500/15 to-teal-500/10 blur-3xl" />
+          <div className="absolute top-1/2 right-1/4 h-64 w-64 rounded-full bg-gradient-to-r from-cyan-500/10 to-emerald-500/5 blur-3xl" />
+          <div className="absolute -bottom-48 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-tl from-cyan-500/10 to-emerald-500/5 blur-3xl" />
+        </div>
+
         {/* Header */}
-        <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
+        <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl shadow-lg shadow-black/20">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
@@ -1451,7 +1464,8 @@ export default function NotificationsPage() {
               </Button>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="bg-gradient-to-br from-primary to-primary/80 p-3 rounded-xl shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 blur-lg opacity-40 rounded-xl" />
+                  <div className="relative bg-gradient-to-br from-emerald-600 to-teal-600 p-3 rounded-xl shadow-lg">
                     <Bell className="h-6 w-6 text-white" />
                   </div>
                   {pendingCount > 0 && (
@@ -1461,10 +1475,10 @@ export default function NotificationsPage() {
                   )}
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
                     لوحة الإشعارات المتقدمة
                   </h1>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-slate-400">
                     آخر تحديث: {format(new Date(), "HH:mm", { locale: ar })}
                   </p>
                 </div>
@@ -1576,7 +1590,7 @@ export default function NotificationsPage() {
           )}
 
           {/* Filters and Search */}
-          <Card className="bg-card/50 backdrop-blur-sm border shadow-md">
+          <Card className="bg-slate-900/70 backdrop-blur-sm border border-slate-800/50 shadow-xl shadow-black/20">
             <CardContent className="p-4">
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                 <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
