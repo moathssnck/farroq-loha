@@ -45,12 +45,16 @@ npm start      # Production server on port 5000
 ```
 
 ## Recent Changes
+- December 2025: UI Enhancements
+  - Enhanced login page with glowing emerald theme, gradient orbs, and floating particles
+  - Upgraded notifications page with dark slate theme and animated backgrounds
+  - Improved loading states with glowing emerald spinner and blur effects
+  - Enhanced StatisticsCard components with dark theme and hover effects
+  - Updated header styling with glowing bell icon
+  - Added gradient border effects and improved visual consistency
 - December 2025: Initial Replit setup
   - Configured Next.js for Replit proxy compatibility
   - Updated to use port 5000
-  - Enhanced login page UI with modern gradients and animations
-  - Added floating particle effects and gradient orbs
-  - Improved form styling with focus states
 
 ## Features
 - Beautiful RTL Arabic interface
